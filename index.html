@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gestión de Visitas - Soporte Regional</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 pb-12 antialiased">
+
+    <header class="bg-indigo-700 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col lg:flex-row justify-between items-center gap-4">
+            
+            <div class="flex items-center gap-3 w-full lg:w-auto justify-center lg:justify-start">
+                <div class="bg-white p-1.5 rounded-lg shadow-sm flex items-center justify-center shrink-0">
+                    <img src="image_779edc.png" alt="Logo Teknología" class="h-9 w-auto object-contain">
+                </div>
+                <div class="text-center lg:text-left">
+                    <h1 class="text-lg md:text-xl font-bold tracking-tight leading-tight">Líder Regional de Soporte</h1>
+                    <p class="text-xs text-indigo-200">Control de Visitas a Puntos de Venta</p>
+                </div>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+                <input id="tienda" type="text" placeholder="Nombre de la Tienda / ID" class="w-full sm:w-48 px-3 py-2 text-base md:text-sm rounded bg-indigo-800 text-white border border-indigo-600 placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-white">
+                <div class="grid grid-cols-2 sm:flex gap-2 w-full sm:w-auto">
+                    <input id="fecha" type="date" class="w-full sm:w-36 px-3 py-2 text-base md:text-sm rounded bg-indigo-800 text-white border border-indigo-600 focus:outline-none focus:ring-2 focus:ring-white">
+                    <input id="hora" type="time" class="w-full sm:w-28 px-3 py-2 text-base md:text-sm rounded bg-indigo-800 text-white border border-indigo-600 focus:outline-none focus:ring-2 focus:ring-white">
+                </div>
+            </div>
+
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <section class="lg:col-span-2 space-y-6">
+            
+            <div class="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-base font-bold text-slate-900 border-b pb-2 mb-4 flex items-center gap-2">
+                    📶 Estado de la Red Wi-Fi
+                </h2>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Vel. Subida (Mbps)</label>
+                        <input id="wifi_carga" type="number" oninput="calcularTodo()" placeholder="Ej: 85" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Vel. Bajada (Mbps)</label>
+                        <input id="wifi_descarga" type="number" oninput="calcularTodo()" placeholder="Ej: 26" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Latencia (ms)</label>
+                        <input id="wifi_latencia" type="number" oninput="calcularTodo()" placeholder="Ej: 15" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Señal (Db)</label>
+                        <input id="wifi_senal" type="number" oninput="calcularTodo()" placeholder="Ej: 45" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-colors">
+                    </div>
+                    <div class="col-span-2 sm:col-span-4">
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Zonas con baja cobertura o interferencias</label>
+                        <textarea id="wifi_cobertura" rows="2" placeholder="Describa si hay puntos ciegos en la tienda..." class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-base font-bold text-slate-900 border-b pb-2 mb-4 flex items-center gap-2">
+                    🗄️ Estado del Rack de Comunicaciones
+                </h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <label class="flex items-center gap-3 p-3 bg-slate-50 rounded active:bg-slate-200 lg:hover:bg-slate-100 cursor-pointer select-none">
+                        <input id="rack_organizado" type="checkbox" checked class="w-5 h-5 sm:w-4 sm:h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                        <span class="text-sm font-medium">Rack Organizado y Limpio</span>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 bg-slate-50 rounded active:bg-slate-200 lg:hover:bg-slate-100 cursor-pointer select-none">
+                        <input id="rack_aire" type="checkbox" checked class="w-5 h-5 sm:w-4 sm:h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                        <span class="text-sm font-medium">Aire Acondicionado Operativo</span>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 bg-slate-50 rounded active:bg-slate-200 lg:hover:bg-slate-100 cursor-pointer select-none">
+                        <input id="rack_extintor" type="checkbox" checked class="w-5 h-5 sm:w-4 sm:h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                        <span class="text-sm font-medium">Extintor Vigente y en Sitio</span>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 bg-slate-50 rounded active:bg-slate-200 lg:hover:bg-slate-100 cursor-pointer select-none">
+                        <input id="rack_ups" type="checkbox" checked class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                        <span class="text-sm font-medium">UPS sin Alertas / Operativa</span>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 bg-slate-50 rounded active:bg-slate-200 lg:hover:bg-slate-100 cursor-pointer select-none sm:col-span-2">
+                        <input id="rack_bitacora" type="checkbox" checked class="w-5 h-5 sm:w-4 sm:h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                        <span class="text-sm font-medium">Bitácora de Accesos al Día</span>
+                    </label>
+                    <div class="sm:col-span-2 mt-2">
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Observaciones / Hallazgos Físicos del Rack</label>
+                        <textarea id="rack_observaciones" rows="2" placeholder="Observaciones técnicas..." class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-base font-bold text-slate-900 border-b pb-2 mb-4 flex items-center gap-2">
+                    🛒 Estado de Cajas (Frente de Facturación)
+                </h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Surepos</label>
+                        <select id="caja_surepos" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="Óptimo">Óptimo</option>
+                            <option value="Mantenimiento">Mantenimiento</option>
+                            <option value="Crítico">Crítico / Inoperativo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">CPU Caja</label>
+                        <select id="caja_cpu" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="Óptimo">Óptimo</option>
+                            <option value="Mantenimiento">Mantenimiento</option>
+                            <option value="Crítico">Crítico / Inoperativo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Escáner</label>
+                        <select id="caja_escaner" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="Óptimo">Óptimo</option>
+                            <option value="Mantenimiento">Mantenimiento</option>
+                            <option value="Crítico">Crítico / Inoperativo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Pistola</label>
+                        <select id="caja_pistola" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="Óptimo">Óptimo</option>
+                            <option value="Mantenimiento">Mantenimiento</option>
+                            <option value="Crítico">Crítico / Inoperativo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Impresora Térmica</label>
+                        <select id="caja_termica" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="Óptimo">Óptimo</option>
+                            <option value="Mantenimiento">Mantenimiento</option>
+                            <option value="Crítico">Crítico / Inoperativo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Impresora Láser</label>
+                        <select id="caja_laser" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="Óptimo">Óptimo</option>
+                            <option value="Mantenimiento">Mantenimiento</option>
+                            <option value="Crítico">Crítico / Inoperativo</option>
+                        </select>
+                    </div>
+                    <div class="sm:col-span-2 lg:col-span-3">
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Observaciones de los Cajeros</label>
+                        <textarea id="observaciones_cajeros" rows="2" placeholder="Comentarios de cajas..." class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-base font-bold text-slate-900 border-b pb-2 mb-4 flex items-center gap-2">
+                    💻 Estado de Equipos Tecnológicos Móviles / Admin
+                </h2>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Tabletas</label>
+                        <select id="estado_tabletas" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="Óptimo">Óptimo</option>
+                            <option value="Mantenimiento">Requiere Mantenimiento</option>
+                            <option value="Crítico">Crítico / Inoperativo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">PDAs (Handhelds)</label>
+                        <select id="estado_pdas" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="Óptimo">Óptimo</option>
+                            <option value="Mantenimiento">Requiere Mantenimiento</option>
+                            <option value="Crítico">Crítico / Inoperativo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">PCs Administrativos</label>
+                        <select id="estado_pcs" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="Óptimo">Óptimo</option>
+                            <option value="Mantenimiento">Requiere Mantenimiento</option>
+                            <option value="Crítico">Crítico / Inoperativo</option>
+                        </select>
+                    </div>
+                    <div class="sm:col-span-3">
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Observaciones de Dispositivos</label>
+                        <textarea id="equipos_observaciones" rows="2" placeholder="Detalles de hardware..." class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-base font-bold text-slate-900 border-b pb-2 mb-4 flex items-center gap-2">
+                    🗣️ Conversación con el Encargado del Punto
+                </h2>
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Datos clave del personal administrativo</label>
+                    <textarea id="notas_encargado" rows="3" placeholder="Solicitudes o quejas..." class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-base font-bold text-slate-900 border-b pb-2 mb-3 flex items-center gap-2">
+                    ✍️ Validación de Visita Técnica
+                </h2>
+                <p class="text-xs text-slate-500 mb-3">Solicite al Jefe de Tienda / Encargado validar la inspección firmando en el recuadro gris utilizando su dedo o puntero táctil:</p>
+                
+                <div class="border-2 border-dashed border-slate-300 rounded-lg bg-slate-100 relative">
+                    <canvas id="firma_canvas" class="w-full h-40 block cursor-crosshair touch-none"></canvas>
+                </div>
+                
+                <div class="mt-2.5 flex justify-between items-center">
+                    <span class="text-[11px] text-slate-400 font-medium">Cierre formal de conformidad</span>
+                    <button type="button" onclick="limpiarFirma()" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded transition-colors">
+                        🗑️ Limpiar Trazo
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+        <section class="space-y-6">
+            
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 text-center">
+                <h2 class="text-xs font-bold text-slate-500 tracking-wider uppercase mb-3">Estado General Visita</h2>
+                
+                <div class="flex justify-center mb-5">
+                    <div id="semaforo_circulo" class="w-24 h-24 rounded-full bg-emerald-500 shadow-inner flex items-center justify-center transition-all duration-300">
+                        <span id="semaforo_texto" class="text-white font-bold text-sm tracking-wide">ÓPTIMO</span>
+                    </div>
+                </div>
+
+                <div class="space-y-2 text-left mb-4 border-t pt-4 border-slate-100">
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+                        <span class="text-xs font-semibold text-slate-700 flex items-center gap-1.5">📶 Red Wi-Fi</span>
+                        <span id="badge_wifi" class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500 text-white uppercase tracking-wider transition-colors duration-300">ÓPTIMO</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+                        <span class="text-xs font-semibold text-slate-700 flex items-center gap-1.5">🗄️ Rack Comun.</span>
+                        <span id="badge_rack" class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500 text-white uppercase tracking-wider transition-colors duration-300">ÓPTIMO</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+                        <span class="text-xs font-semibold text-slate-700 flex items-center gap-1.5">🛒 Frente Cajas</span>
+                        <span id="badge_cajas" class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500 text-white uppercase tracking-wider transition-colors duration-300">ÓPTIMO</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+                        <span class="text-xs font-semibold text-slate-700 flex items-center gap-1.5">💻 Equipos Móviles</span>
+                        <span id="badge_equipos" class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500 text-white uppercase tracking-wider transition-colors duration-300">ÓPTIMO</span>
+                    </div>
+                </div>
+
+                <button onclick="calcularTodo()" class="w-full bg-indigo-600 active:bg-indigo-800 lg:hover:bg-indigo-700 text-white text-sm font-semibold py-3 sm:py-2 px-4 rounded transition-colors shadow">
+                    🔄 Procesar e Informar
+                </button>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4">
+                <h3 class="text-sm font-bold text-slate-900 border-b pb-2">📂 Entregables Automatizados</h3>
+                
+                <button onclick="descargarExcel()" class="w-full flex items-center justify-between p-3.5 bg-emerald-50 active:bg-emerald-200 lg:hover:bg-emerald-100 rounded-lg text-left border border-emerald-200 text-sm font-medium transition-colors">
+                    <span class="text-slate-700 flex items-center gap-2">📊 Exportar Reporte a Excel (.xlsx)</span>
+                    <span class="text-emerald-600 font-bold">⬇️</span>
+                </button>
+
+                <button onclick="abrirModal('correo')" class="w-full flex items-center justify-between p-3.5 bg-slate-50 active:bg-slate-200 lg:hover:bg-slate-100 rounded-lg text-left border border-slate-200 text-sm font-medium transition-colors">
+                    <span>📧 Resumen Ejecutivo para Correo</span>
+                    <span class="text-indigo-600 font-bold">➔</span>
+                </button>
+
+                <button onclick="abrirModal('ppt')" class="w-full flex items-center justify-between p-3.5 bg-slate-50 active:bg-slate-200 lg:hover:bg-slate-100 rounded-lg text-left border border-slate-200 text-sm font-medium transition-colors">
+                    <span>📊 Estructura de Diapositivas PPT</span>
+                    <span class="text-indigo-600 font-bold">➔</span>
+                </button>
+            </div>
+
+        </section>
+    </main>
+
+    <div id="modal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center p-3 sm:p-4 z-50 transition-opacity duration-300">
+        <div class="bg-white w-full max-w-2xl rounded-xl shadow-xl flex flex-col max-h-[90vh] sm:max-h-[85vh]">
+            <div class="p-4 border-b flex justify-between items-center bg-slate-50 rounded-t-xl">
+                <h3 id="modal_titulo" class="font-bold text-sm sm:text-base text-slate-800 truncate pr-2"></h3>
+                <button onclick="cerrarModal()" class="text-slate-400 hover:text-slate-600 text-2xl font-bold p-1">&times;</button>
+            </div>
+            <div class="p-3 sm:p-4 overflow-y-auto flex-1">
+                <textarea id="modal_texto" readonly class="w-full h-64 p-3 bg-slate-50 border border-slate-300 rounded font-mono text-xs focus:outline-none resize-none"></textarea>
+            </div>
+            <div class="p-3 sm:p-4 border-t bg-slate-50 flex flex-col sm:flex-row justify-end gap-2 rounded-b-xl">
+                <button onclick="copiarContenido()" class="w-full sm:w-auto bg-indigo-600 active:bg-indigo-800 lg:hover:bg-indigo-700 text-white font-semibold text-xs py-3 sm:py-2 px-4 rounded shadow text-center">
+                    📋 Copiar Contenido
+                </button>
+                <button onclick="cerrarModal()" class="w-full sm:w-auto bg-slate-200 active:bg-slate-300 text-slate-700 font-semibold text-xs py-3 sm:py-2 px-4 rounded text-center">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inicialización automática de Fecha y Hora actuales al cargar
+        const ahora = new Date();
+        document.getElementById('fecha').valueAsDate = ahora;
+        
+        const hrs = String(ahora.getHours()).padStart(2, '0');
+        const mins = String(ahora.getMinutes()).padStart(2, '0');
+        document.getElementById('hora').value = `${hrs}:${mins}`;
+
+        // LÓGICA DEL LIENZO DE FIRMA TÁCTIL (CANVAS CORREGIDO)
+        const canvas = document.getElementById('firma_canvas');
+        const ctx = canvas.getContext('2d');
+        let dibujando = false;
+
+        function redimensionarCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            const nuevoAncho = Math.floor(rect.width);
+            const nuevoAlto = Math.floor(rect.height);
+
+            // ESCUDO PROTECTOR: Si el tamaño físico no cambió realmente (como al hacer scroll vertical en celulares),
+            // salimos de la función inmediatamente para que el navegador NO borre los píxeles ya dibujados.
+            if (canvas.width === nuevoAncho && canvas.height === nuevoAlto) {
+                return;
+            }
+
+            // RESPALDO DE SEGURIDAD: Si la pantalla cambia de tamaño de verdad (ej. rotación de vertical a horizontal),
+            // guardamos el trazo actual en memoria antes de reconfigurar las dimensiones corporativas.
+            let canvasRespaldo = null;
+            if (canvas.width > 0 && canvas.height > 0) {
+                canvasRespaldo = document.createElement('canvas');
+                canvasRespaldo.width = canvas.width;
+                canvasRespaldo.height = canvas.height;
+                canvasRespaldo.getContext('2d').drawImage(canvas, 0, 0);
+            }
+
+            // Aplicamos las nuevas dimensiones internas requeridas
+            canvas.width = nuevoAncho;
+            canvas.height = nuevoAlto;
+            
+            // Los estilos del pincel se restablecen por defecto cada vez que cambia el ancho/alto
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#1e1b4b'; // Azul índigo oscuro corporativo
+
+            // Si teníamos un dibujo guardado debido a un cambio de orientación legítimo, lo restauramos escalado
+            if (canvasRespaldo) {
+                ctx.drawImage(canvasRespaldo, 0, 0, canvasRespaldo.width, canvasRespaldo.height, 0, 0, nuevoAncho, nuevoAlto);
+            }
+        }
+        
+        // Listeners de redimensión con retardo inicial controlado
+        window.addEventListener('resize', redimensionarCanvas);
+        setTimeout(redimensionarCanvas, 200);
+
+        // Obtener coordenadas normalizadas (Móvil / Desktop)
+        function obtenerCoordenadas(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clienteX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clienteY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: clienteX - rect.left,
+                y: clienteY - rect.top
+            };
+        }
+
+        function iniciarDibujo(e) {
+            dibujando = true;
+            const pos = obtenerCoordenadas(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        }
+
+        function moverDibujo(e) {
+            if (!dibujando) return;
+            const pos = obtenerCoordenadas(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        }
+
+        function detenerDibujo() {
+            dibujando = false;
+        }
+
+        function limpiarFirma() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Listeners de Ratón (Computador)
+        canvas.addEventListener('mousedown', iniciarDibujo);
+        canvas.addEventListener('mousemove', moverDibujo);
+        window.addEventListener('mouseup', detenerDibujo);
+
+        // Listeners de Toque (Celulares / Tabletas)
+        canvas.addEventListener('touchstart', iniciarDibujo);
+        canvas.addEventListener('touchmove', moverDibujo);
+        window.addEventListener('touchend', detenerDibujo);
+
+
+        function actualizarEstiloBadge(idElemento, estado) {
+            const badge = document.getElementById(idElemento);
+            badge.innerText = estado;
+            badge.className = "px-2.5 py-1 rounded-full text-[10px] font-bold text-white uppercase tracking-wider transition-colors duration-300";
+            
+            if (estado === "CRÍTICO") {
+                badge.classList.add("bg-rose-500");
+            } else if (estado === "ADVERTENCIA") {
+                badge.classList.add("bg-amber-400");
+            } else {
+                badge.classList.add("bg-emerald-500");
+            }
+        }
+
+        function colorizarInput(idElemento, estado, estaVacio) {
+            const input = document.getElementById(idElemento);
+            input.classList.remove(
+                'bg-slate-50', 'border-slate-300', 'focus:ring-indigo-500',
+                'bg-emerald-50', 'border-emerald-300', 'focus:ring-emerald-500',
+                'bg-amber-50', 'border-amber-300', 'focus:ring-amber-500',
+                'bg-rose-50', 'border-rose-300', 'focus:ring-rose-500'
+            );
+
+            if (estaVacio) {
+                input.classList.add('bg-slate-50', 'border-slate-300', 'focus:ring-indigo-500');
+                return;
+            }
+
+            if (estado === "CRÍTICO") {
+                input.classList.add('bg-rose-50', 'border-rose-300', 'focus:ring-rose-500');
+            } else if (estado === "ADVERTENCIA") {
+                input.classList.add('bg-amber-50', 'border-amber-300', 'focus:ring-amber-500');
+            } else {
+                input.classList.add('bg-emerald-50', 'border-emerald-300', 'focus:ring-emerald-500');
+            }
+        }
+
+        function calcularTodo() {
+            const rawSubida = document.getElementById('wifi_carga').value;
+            const rawBajada = document.getElementById('wifi_descarga').value;
+            const rawLatencia = document.getElementById('wifi_latencia').value;
+            const rawSenal = document.getElementById('wifi_senal').value;
+
+            const subida = parseFloat(rawSubida);
+            const bajada = parseFloat(rawBajada);
+            const latencia = parseFloat(rawLatencia);
+            const senal = parseFloat(rawSenal);
+
+            let estSubida = "ÓPTIMO";
+            if (rawSubida !== "") {
+                if (subida < 30) estSubida = "CRÍTICO";
+                else if (subida <= 79) estSubida = "ADVERTENCIA";
+            }
+            colorizarInput('wifi_carga', estSubida, rawSubida === "");
+
+            let estBajada = "ÓPTIMO";
+            if (rawBajada !== "") {
+                if (bajada < 18) estBajada = "CRÍTICO";
+                else if (bajada <= 24) estBajada = "ADVERTENCIA";
+            }
+            colorizarInput('wifi_descarga', estBajada, rawBajada === "");
+
+            let estLatencia = "ÓPTIMO";
+            if (rawLatencia !== "") {
+                if (latencia > 60) estLatencia = "CRÍTICO";
+                else if (latencia >= 21) estLatencia = "ADVERTENCIA";
+            }
+            colorizarInput('wifi_latencia', estLatencia, rawLatencia === "");
+
+            let estSenal = "ÓPTIMO";
+            if (rawSenal !== "") {
+                if (senal > 80) estSenal = "CRÍTICO";
+                else if (senal >= 51) estSenal = "ADVERTENCIA";
+            }
+            colorizarInput('wifi_senal', estSenal, rawSenal === "");
+
+            let estadoWifi = "ÓPTIMO";
+            if (rawSubida==="" && rawBajada==="" && rawLatencia==="" && rawSenal==="") {
+                estadoWifi = "ÓPTIMO"; 
+            } else if (estSubida === "CRÍTICO" || estBajada === "CRÍTICO" || estLatencia === "CRÍTICO" || estSenal === "CRÍTICO") {
+                estadoWifi = "CRÍTICO";
+            } else if (estSubida === "ADVERTENCIA" || estBajada === "ADVERTENCIA" || estLatencia === "ADVERTENCIA" || estSenal === "ADVERTENCIA") {
+                estadoWifi = "ADVERTENCIA";
+            }
+            actualizarEstiloBadge('badge_wifi', estadoWifi);
+
+            let rackFallas = 0;
+            if(!document.getElementById('rack_organizado').checked) rackFallas++;
+            if(!document.getElementById('rack_aire').checked) rackFallas++;
+            if(!document.getElementById('rack_extintor').checked) rackFallas++;
+            if(!document.getElementById('rack_ups').checked) rackFallas++;
+            if(!document.getElementById('rack_bitacora').checked) rackFallas++;
+
+            let estadoRack = "ÓPTIMO";
+            if (rackFallas >= 3) {
+                estadoRack = "CRÍTICO";
+            } else if (rackFallas > 0) {
+                estadoRack = "ADVERTENCIA";
+            }
+            actualizarEstiloBadge('badge_rack', estadoRack);
+
+            const s_surepos = document.getElementById('caja_surepos').value;
+            const s_cpu = document.getElementById('caja_cpu').value;
+            const s_escaner = document.getElementById('caja_escaner').value;
+            const s_pistola = document.getElementById('caja_pistola').value;
+            const s_termica = document.getElementById('caja_termica').value;
+            const s_laser = document.getElementById('caja_laser').value;
+
+            let estadoCajas = "ÓPTIMO";
+            if (s_surepos === "Crítico" || s_cpu === "Crítico" || s_escaner === "Crítico" || s_pistola === "Crítico" || s_termica === "Crítico" || s_laser === "Crítico") {
+                estadoCajas = "CRÍTICO";
+            } else if (s_surepos === "Mantenimiento" || s_cpu === "Mantenimiento" || s_escaner === "Mantenimiento" || s_pistola === "Mantenimiento" || s_termica === "Mantenimiento" || s_laser === "Mantenimiento") {
+                estadoCajas = "ADVERTENCIA";
+            }
+            actualizarEstiloBadge('badge_cajas', estadoCajas);
+
+            const t_status = document.getElementById('estado_tabletas').value;
+            const p_status = document.getElementById('estado_pdas').value;
+            const pc_status = document.getElementById('estado_pcs').value;
+
+            let estadoEquipos = "ÓPTIMO";
+            if (t_status === "Crítico" || p_status === "Crítico" || pc_status === "Crítico") {
+                estadoEquipos = "CRÍTICO";
+            } else if (t_status === "Mantenimiento" || p_status === "Mantenimiento" || pc_status === "Mantenimiento") {
+                estadoEquipos = "ADVERTENCIA";
+            }
+            actualizarEstiloBadge('badge_equipos', estadoEquipos);
+
+            const circulo = document.getElementById('semaforo_circulo');
+            const texto = document.getElementById('semaforo_texto');
+            circulo.className = "w-24 h-24 rounded-full shadow-inner flex items-center justify-center transition-all duration-300";
+
+            if (estadoWifi === "CRÍTICO" || estadoRack === "CRÍTICO" || estadoCajas === "CRÍTICO" || estadoEquipos === "CRÍTICO") {
+                circulo.classList.add("bg-rose-500", "animate-pulse");
+                texto.innerText = "CRÍTICO";
+            } else if (estadoWifi === "ADVERTENCIA" || estadoRack === "ADVERTENCIA" || estadoCajas === "ADVERTENCIA" || estadoEquipos === "ADVERTENCIA") {
+                circulo.classList.add("bg-amber-400");
+                texto.innerText = "ADVERTENCIA";
+            } else {
+                circulo.classList.add("bg-emerald-500");
+                texto.innerText = "ÓPTIMO";
+            }
+        }
+
+        function descargarExcel() {
+            calcularTodo(); 
+
+            const tienda = document.getElementById('tienda').value.trim() || "Tienda no especificada";
+            const fecha = document.getElementById('fecha').value || "Sin fecha";
+            const hora = document.getElementById('hora').value || "Sin hora";
+            
+            const estGlobal = document.getElementById('semaforo_texto').innerText;
+            const estWifi = document.getElementById('badge_wifi').innerText;
+            const estRack = document.getElementById('badge_rack').innerText;
+            const estCajas = document.getElementById('badge_cajas').innerText;
+            const estEquipos = document.getElementById('badge_equipos').innerText;
+
+            const estructuraDatos = [
+                ["INFORME DE CONTROL DE VISITAS TÉCNICAS (V1)", ""],
+                ["Área de Soporte e Infraestructura IT", ""],
+                ["", ""],
+                ["📍 DATOS DEL PUNTO DE VENTA", ""],
+                ["Nombre de la Tienda / ID", tienda],
+                ["Fecha de la Inspección", fecha],
+                ["Hora de la Inspección", hora],
+                ["", ""],
+                ["🚦 MATRIZ DE SEMAFORIZACIÓN", ""],
+                ["ESTADO GENERAL DE LA VISITA", estGlobal],
+                ["Subsistema: Red Wi-Fi", estWifi],
+                ["Subsistema: Rack de Comunicaciones", estRack],
+                ["Subsistema: Frente de Cajas (POS)", estCajas],
+                ["Subsistema: Equipos Móviles / Admin", estEquipos],
+                ["Firma Táctil de Conformidad", "Registrada digitalmente en dispositivo"],
+                ["", ""],
+                ["📊 METRICAS DETALLADAS DE RED", ""],
+                ["Velocidad de Subida", (document.getElementById('wifi_carga').value || "N/R") + " Mbps"],
+                ["Velocidad de Bajada", (document.getElementById('wifi_descarga').value || "N/R") + " Mbps"],
+                ["Latencia del Enlace", (document.getElementById('wifi_latencia').value || "N/R") + " ms"],
+                ["Potencia de Señal", (document.getElementById('wifi_senal').value || "N/R") + " Db"]
+            ];
+
+            const libroTrabajo = XLSX.utils.book_new();
+            const hojaResumen = XLSX.utils.aoa_to_sheet(estructuraDatos);
+
+            hojaResumen['!cols'] = [{ wch: 35 }, { wch: 30 }];
+            XLSX.utils.book_append_sheet(libroTrabajo, hojaResumen, "Estado Semáforo");
+
+            const formatoNombre = `Reporte_Semaforo_${tienda.replace(/[^a-zA-Z0-9]/g, "_")}_${fecha}_${hora.replace(':', '-')}.xlsx`;
+            XLSX.writeFile(libroTrabajo, formatoNombre);
+        }
+
+        function generarTextoCorreo() {
+            const tienda = document.getElementById('tienda').value.trim() || "[Nombre Tienda / ID]";
+            const fecha = document.getElementById('fecha').value;
+            const hora = document.getElementById('hora').value || "[Hora]";
+            
+            const estGlobal = document.getElementById('semaforo_texto').innerText;
+            const estWifi = document.getElementById('badge_wifi').innerText;
+            const estRack = document.getElementById('badge_rack').innerText;
+            const estCajas = document.getElementById('badge_cajas').innerText;
+            const estEquipos = document.getElementById('badge_equipos').innerText;
+
+            const mapaVisual = { "ÓPTIMO": "🟩 [ ÓPTIMO ]", "ADVERTENCIA": "🟨 [ ADVERTENCIA ]", "CRÍTICO": "🟥 [ CRÍTICO ]" };
+
+            let seccionPlanes = "=== PLAN DE ACCIÓN TÉCNICA Y TIEMPOS ESTIMADOS DE SOLUCIÓN ===\n";
+            let accionesCorrectivas = "";
+
+            if (estWifi === "CRÍTICO") {
+                accionesCorrectivas += `- [RED WI-FI]: Intervención en sitio inmediata. Diagnóstico de canales saturados, verificación física de Access Points y escalamiento con ISP por degradación severa de umbrales corporativos. \n  * Tiempo Estimado de Solución (RTO): < 12 Horas.\n\n`;
+            } else if (estWifi === "ADVERTENCIA") {
+                accionesCorrectivas += `- [RED WI-FI]: Programación de optimización lógica de espectro inalámbrico en consola de administración. Mitigación de puntos ciegos reportados en tienda.\n  * Tiempo Estimado de Solución: 48 Horas.\n\n`;
+            }
+
+            if (estRack === "CRÍTICO") {
+                accionesCorrectivas += `- [RACK DE COMUNICACIONES]: Reordenamiento estructural crítico de cableado (patch cords), revisión obligatoria de contingencia por alertas en baterías de la UPS y reporte a infraestructura física por fallas en el aire acondicionado.\n  * Tiempo Estimado de Solución (RTO): 24 Horas.\n\n`;
+            } else if (estRack === "ADVERTENCIA") {
+                accionesCorrectivas += `- [RACK DE COMUNICACIONES]: Ejecución de tareas preventivas rutinarias (limpieza del gabinete de datos, actualización de bitácora física de control de accesos y solicitud de recarga para extintor en sitio).\n  * Tiempo Estimado de Solución: 3 a 5 Días Hábiles.\n\n`;
+            }
+
+            if (estCajas === "CRÍTICO") {
+                accionesCorrectivas += `- [FRENTE DE CAJAS]: Reemplazo inmediato de hardware inoperativo (CPU POS / Periféricos críticos) utilizando stock de contingencia del centro de soporte. Priorización en la estabilización de los controladores Surepos para evitar caída en la línea de cobro.\n  * Tiempo Estimado de Solución (RTO): < 4 Horas (Impacto Directo al Negocio).\n\n`;
+            } else if (estCajas === "ADVERTENCIA") {
+                accionesCorrectivas += `- [FRENTE DE CAJAS]: Mantenimiento de hardware preventivo en sitio. Calibración y limpieza óptica de escáneres/pistolas y purga de controladores lógicos de impresión térmica/láser.\n  * Tiempo Estimado de Solución: 24 Horas.\n\n`;
+            }
+
+            if (estEquipos === "CRÍTICO") {
+                accionesCorrectivas += `- [EQUIPOS MÓVILES/ADMIN]: Retiro y reemplazo de hardware inoperativo (Tabletas / PDAs) haciendo uso del stock de contingencia local.\n  * Tiempo Estimado de Solución (RTO): 24 Horas.\n\n`;
+            } else if (estEquipos === "ADVERTENCIA") {
+                accionesCorrectivas += `- [EQUIPOS MÓVILES/ADMIN]: Depuración de almacenamiento interno, borrado de temporales lógicos de sistema y actualización controlada de aplicativos.\n  * Tiempo Estimado de Solución: 48 Horas.\n\n`;
+            }
+
+            if (accionesCorrectivas === "") {
+                accionesCorrectivas = "No se requieren acciones correctivas urgentes en los sistemas evaluados. Mantener plan de monitoreo preventivo estándar.\n\n";
+            }
+            seccionPlanes += accionesCorrectivas;
+
+            let rackStatus = [];
+            if(document.getElementById('rack_organizado').checked) rackStatus.push("Organizado");
+            if(document.getElementById('rack_aire').checked) rackStatus.push("Aire OK");
+            if(document.getElementById('rack_extintor').checked) rackStatus.push("Extintor OK");
+            if(document.getElementById('rack_ups').checked) rackStatus.push("UPS OK");
+            if(document.getElementById('rack_bitacora').checked) rackStatus.push("Bitácora al día");
+
+            let cuerpo = `ASUNTO: Informe Técnico IT - Inspección de Infraestructura y POS - ${tienda} (${fecha} ${hora})\n\n`;
+            cuerpo += `Estimado Equipo Directivo,\n\nComparto el informe formal derivado de la auditoría y visita técnica de soporte realizada al punto de venta el día ${fecha} a las ${hora}.\n\n`;
+            cuerpo += `======================================================\n`;
+            cuerpo += `📊 DASHBOARD DE SALUD TECNOLÓGICA (SEMÁFOROS)\n`;
+            cuerpo += `======================================================\n`;
+            cuerpo += `ESTADO GLOBAL DE LA VISITA : ${mapaVisual[estGlobal]}\n\n`;
+            cuerpo += `Desglose de Subsistemas Evaluados:\n`;
+            cuerpo += `  [📶] Semáforo Red Wi-Fi        : ${mapaVisual[estWifi]}\n`;
+            cuerpo += `  [🗄️] Semáforo Rack Comun.      : ${mapaVisual[estRack]}\n`;
+            cuerpo += `  [🛒] Semáforo Frente Cajas     : ${mapaVisual[mapaVisual[estCajas] ? estCajas : "ÓPTIMO"]}\n`; 
+            cuerpo += `  [💻] Semáforo Equipos Móviles  : ${mapaVisual[estEquipos]}\n`;
+            cuerpo += `------------------------------------------------------\n\n`;
+            cuerpo += seccionPlanes;
+            cuerpo += `=== DETALLES MÉTRICOS DE LA REVISIÓN ===\n`;
+            cuerpo += `1. TELEMETRÍA DE RED INALÁMBRICA:\n`;
+            cuerpo += `   - Velocidad de Subida : ${document.getElementById('wifi_carga').value || 'N/R'} Mbps\n`;
+            cuerpo += `   - Velocidad de Bajada : ${document.getElementById('wifi_descarga').value || 'N/R'} Mbps\n`;
+            cuerpo += `   - Latencia del Enlace : ${document.getElementById('wifi_latencia').value || 'N/R'} ms\n`;
+            cuerpo += `   - Potencia de Señal   : ${document.getElementById('wifi_senal').value || 'N/R'} Db\n`;
+            cuerpo += `   - Cobertura Crítica   : ${document.getElementById('wifi_cobertura').value.trim() || 'Sin novedades'}\n\n`;
+            cuerpo += `2. ELEMENTOS DEL GABINETE DE DATOS (RACK):\n`;
+            cuerpo += `   - Componentes validados: ${rackStatus.join(', ') || 'Ninguno (Revisión urgente requerida)'}\n`;
+            cuerpo += `   - Observaciones Rack    : "${document.getElementById('rack_observaciones').value.trim() || 'Sin observaciones lógicas o físicas.'}"\n\n`;
+            cuerpo += `3. DIAGNÓSTICO DE COMPONENTES DE CAJA (POS):\n`;
+            cuerpo += `   - Sistema Surepos     : ${document.getElementById('caja_surepos').value}\n`;
+            cuerpo += `   - CPU de Caja         : ${document.getElementById('caja_cpu').value}\n`;
+            cuerpo += `   - Escáner Fijo        : ${document.getElementById('caja_escaner').value}\n`;
+            cuerpo += `   - Pistola Cód. Barras : ${document.getElementById('caja_pistola').value}\n`;
+            cuerpo += `   - Impresora Térmica   : ${document.getElementById('caja_termica').value}\n`;
+            cuerpo += `   - Impresora Láser     : ${document.getElementById('caja_laser').value}\n`;
+            cuerpo += `   - Reportes de Cajeros : "${document.getElementById('observaciones_cajeros').value.trim() || 'Sin comentarios o alertas por parte de los cajeros.'}"\n\n`;
+            cuerpo += `4. ESTADO DE HARDWARE COMPLEMENTARIO (MÓVILES/ADMIN):\n`;
+            cuerpo += `   - Dispositivos Tabletas  : ${document.getElementById('estado_tabletas').value}\n`;
+            cuerpo += `   - Dispositivos PDAs      : ${document.getElementById('estado_pdas').value}\n`;
+            cuerpo += `   - PCs Administrativos    : ${document.getElementById('estado_pcs').value}\n`;
+            cuerpo += `   - Observaciones Hardware: "${document.getElementById('equipos_observaciones').value.trim() || 'Sin novedades en el parque tecnológico móvil o de oficina.'}"\n\n`;
+            cuerpo += `5. INSIGHTS Y CAPTURA DE NECESIDADES EN SITIO:\n`;
+            cuerpo += `   - Feedback Administrativo: "${document.getElementById('notas_encargado').value.trim() || 'Sin comentarios adicionales por parte de la operation.'}"\n\n`;
+            cuerpo += `6. CIERRE DE CONFORMIDAD:\n`;
+            cuerpo += `   - Firma Digital Jefe de Tienda: [ CAPTURADA DIGITALMENTE EN PANTALLA TÁCTIL ]\n\n`;
+            cuerpo += `Quedo atento a la asignación de recursos y despliegues técnicos pertinentes.\n\nSaludos cordiales,\nLíder Regional de Soporte\nÁrea de Teknología`;
+            return cuerpo;
+        }
+
+        function generarTextoPPT() {
+            const tienda = document.getElementById('tienda').value.trim() || "[Nombre Tienda / ID]";
+            const fecha = document.getElementById('fecha').value;
+            const hora = document.getElementById('hora').value || "[Hora]";
+            const estado = document.getElementById('semaforo_texto').innerText;
+
+            let ppt = `ESTRUCTURA DE LA PRESENTACIÓN (DIAPOSITIVAS CORPORATIVAS)\n`;
+            ppt += `Para copiar y pegar en PowerPoint / Google Slides:\n\n`;
+            ppt += `------------------------------------------------------\n`;
+            ppt += `DIAPOSITIVA 1: Portada\n`;
+            ppt += `- Título: Informe de Inspección Tecnológica de Tienda\n`;
+            ppt += `- Punto de Venta: ${tienda}\n`;
+            ppt += `- Fecha de Evaluación: ${fecha} (Hora: ${hora})\n`;
+            ppt += `- Responsable: Líder Regional de Soporte\n`;
+            ppt += `------------------------------------------------------\n`;
+            ppt += `DIAPOSITIVA 2: Diagnóstico General (Dashboard Semáforo)\n`;
+            ppt += `- Estado de Salud del Punto: [ ${estado} ]\n`;
+            ppt += `- Resumen Ejecutivo: Conectividad, frente de cajas (POS), infraestructura en rack y dispositivos móviles.\n`;
+            ppt += `------------------------------------------------------\n`;
+            ppt += `DIAPOSITIVA 3: Estado del Frente de Cajas (POS)\n`;
+            ppt += `- Estatus de Salud Frente Cajas: ${document.getElementById('badge_cajas').innerText}\n`;
+            ppt += `- Voz del Usuario (Cajeros): "${document.getElementById('observaciones_cajeros').value.trim() || 'Sin novedades operativas'}"\n`;
+            ppt += `------------------------------------------------------\n`;
+            ppt += `DIAPOSITIVA 4: Infraestructura Física (Rack de Datos)\n`;
+            ppt += `- Estatus de Salud del Rack: ${document.getElementById('badge_rack').innerText}\n`;
+            ppt += `- Observaciones técnicas detectadas: "${document.getElementById('rack_observaciones').value.trim() || 'Infraestructura física estable'}"\n`;
+            ppt += `------------------------------------------------------\n`;
+            ppt += `DIAPOSITIVA 5: Equipamiento Administrativo y Dispositivos Móviles\n`;
+            ppt += `- Estatus de Salud de Hardware: ${document.getElementById('badge_equipos').innerText}\n`;
+            ppt += `- Hallazgos en parque tecnológico: "${document.getElementById('equipos_observaciones').value.trim() || 'Dispositivos operando bajo la norma lógicas'}"\n`;
+            ppt += `------------------------------------------------------\n`;
+            ppt += `DIAPOSITIVA 6: Plan de Acción, Conformidad y ANS (SLA)\n`;
+            ppt += `- Soluciones priorizadas por criticidad de cara a la Gerencia de Tecnología.\n`;
+            ppt += `- Estatus de Validación: Visita firmada digitalmente en sitio por el Jefe de Tienda.`;
+            return ppt;
+        }
+
+        function abrirModal(tipo) {
+            calcularTodo(); 
+            const modal = document.getElementById('modal');
+            const titulo = document.getElementById('modal_titulo');
+            const texto = document.getElementById('modal_texto');
+
+            if(tipo === 'correo') {
+                titulo.innerText = "📧 Formato de Correo Directivo";
+                texto.value = generarTextoCorreo();
+            } else if(tipo === 'ppt') {
+                titulo.innerText = "📊 Guía de Diapositivas para Gerencia";
+                texto.value = generarTextoPPT();
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function cerrarModal() {
+            const modal = document.getElementById('modal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+
+        async function copiarContenido() {
+            const texto = document.getElementById('modal_texto').value;
+            try {
+                await navigator.clipboard.writeText(texto);
+                alert('¡Contenido copiado al portapapeles con éxito!');
+            } catch (err) {
+                const textoArea = document.getElementById('modal_texto');
+                textoArea.select();
+                document.execCommand('copy');
+                alert('¡Contenido copiado con éxito!');
+            }
+        }
+    </script>
+</body>
+</html>
