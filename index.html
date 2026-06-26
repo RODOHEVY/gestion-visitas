@@ -222,7 +222,6 @@
                 </h2>
                 <p class="text-xs text-slate-500 mb-4">Solicite al Jefe de Tienda / Encargado registrar su nombre completo y validar la conformidad de la inspección con su firma:</p>
                 
-                <!-- NUEVO CAMPO DE TEXTO: NOMBRE DEL RESPONSABLE -->
                 <div class="mb-4">
                     <label class="block text-[11px] font-semibold text-slate-600 mb-1">Nombre Completo de quien Firma</label>
                     <input id="nombre_firma" type="text" placeholder="Ej: Carlos Mario Restrepo" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-colors">
@@ -230,7 +229,6 @@
 
                 <label class="block text-[11px] font-semibold text-slate-600 mb-1">Firma Digital (Dedo o Puntero)</label>
                 <div class="border-2 border-dashed border-slate-300 rounded-lg bg-slate-100 relative">
-                    <!-- Canvas táctil (touch-none bloquea el scroll nativo al dibujar) -->
                     <canvas id="firma_canvas" class="w-full h-40 block cursor-crosshair touch-none"></canvas>
                 </div>
                 
@@ -307,7 +305,7 @@
         </section>
     </main>
 
-    <!-- MODAL DE SALIDA -->
+    <!-- MODAL DE SALIDA ACTUALIZADO CON SOPORTE DE VISTA PREVIA HTML -->
     <div id="modal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center p-3 sm:p-4 z-50 transition-opacity duration-300">
         <div class="bg-white w-full max-w-2xl rounded-xl shadow-xl flex flex-col max-h-[90vh] sm:max-h-[85vh]">
             <div class="p-4 border-b flex justify-between items-center bg-slate-50 rounded-t-xl">
@@ -315,7 +313,10 @@
                 <button onclick="cerrarModal()" class="text-slate-400 hover:text-slate-600 text-2xl font-bold p-1">&times;</button>
             </div>
             <div class="p-3 sm:p-4 overflow-y-auto flex-1">
+                <!-- Textarea para PPT (Texto Plano) -->
                 <textarea id="modal_texto" readonly class="w-full h-64 p-3 bg-slate-50 border border-slate-300 rounded font-mono text-xs focus:outline-none resize-none"></textarea>
+                <!-- Contenedor Div para Correo (Permite renderizar texto con la firma visual) -->
+                <div id="modal_preview_html" class="hidden w-full h-64 p-4 bg-white border border-slate-300 rounded overflow-y-auto text-sm font-sans text-slate-800"></div>
             </div>
             <div class="p-3 sm:p-4 border-t bg-slate-50 flex flex-col sm:flex-row justify-end gap-2 rounded-b-xl">
                 <button onclick="copiarContenido()" class="w-full sm:w-auto bg-indigo-600 active:bg-indigo-800 lg:hover:bg-indigo-700 text-white font-semibold text-xs py-3 sm:py-2 px-4 rounded shadow text-center">
@@ -338,7 +339,7 @@
         const mins = String(ahora.getMinutes()).padStart(2, '0');
         document.getElementById('hora').value = `${hrs}:${mins}`;
 
-        // LÓGICA DEL LIENZO DE FIRMA TÁCTIL (CANVAS CORREGIDO)
+        // LÓGICA DEL LIENZO DE FIRMA TÁCTIL
         const canvas = document.getElementById('firma_canvas');
         const ctx = canvas.getContext('2d');
         let dibujando = false;
@@ -348,14 +349,10 @@
             const nuevoAncho = Math.floor(rect.width);
             const nuevoAlto = Math.floor(rect.height);
 
-            // ESCUDO PROTECTOR: Si el tamaño físico no cambió realmente (como al hacer scroll vertical en celulares),
-            // salimos de la función inmediatamente para que el navegador NO borre los píxeles ya dibujados.
             if (canvas.width === nuevoAncho && canvas.height === nuevoAlto) {
                 return;
             }
 
-            // RESPALDO DE SEGURIDAD: Si la pantalla cambia de tamaño de verdad (ej. rotación de vertical a horizontal),
-            // guardamos el trazo actual en memoria antes de reconfigurar las dimensiones corporativas.
             let canvasRespaldo = null;
             if (canvas.width > 0 && canvas.height > 0) {
                 canvasRespaldo = document.createElement('canvas');
@@ -364,26 +361,21 @@
                 canvasRespaldo.getContext('2d').drawImage(canvas, 0, 0);
             }
 
-            // Aplicamos las nuevas dimensiones internas requeridas
             canvas.width = nuevoAncho;
             canvas.height = nuevoAlto;
             
-            // Los estilos del pincel se restablecen por defecto cada vez que cambia el ancho/alto
             ctx.lineWidth = 2.5;
             ctx.lineCap = 'round';
             ctx.strokeStyle = '#1e1b4b'; // Azul índigo oscuro corporativo
 
-            // Si teníamos un dibujo guardado debido a un cambio de orientación legítimo, lo restauramos escalado
             if (canvasRespaldo) {
                 ctx.drawImage(canvasRespaldo, 0, 0, canvasRespaldo.width, canvasRespaldo.height, 0, 0, nuevoAncho, nuevoAlto);
             }
         }
         
-        // Listeners de redimensión con retardo inicial controlado
         window.addEventListener('resize', redimensionarCanvas);
         setTimeout(redimensionarCanvas, 200);
 
-        // Obtener coordenadas normalizadas (Móvil / Desktop)
         function obtenerCoordenadas(e) {
             const rect = canvas.getBoundingClientRect();
             const clienteX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -416,16 +408,13 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
 
-        // Listeners de Ratón (Computador)
         canvas.addEventListener('mousedown', iniciarDibujo);
         canvas.addEventListener('mousemove', moverDibujo);
         window.addEventListener('mouseup', detenerDibujo);
 
-        // Listeners de Toque (Celulares / Tabletas)
         canvas.addEventListener('touchstart', iniciarDibujo);
         canvas.addEventListener('touchmove', moverDibujo);
         window.addEventListener('touchend', detenerDibujo);
-
 
         function actualizarEstiloBadge(idElemento, estado) {
             const badge = document.getElementById(idElemento);
@@ -622,9 +611,10 @@
             XLSX.writeFile(libroTrabajo, formatoNombre);
         }
 
-        function generarTextoCorreo() {
+        // NUEVA FUNCIÓN: GENERA EL CORREO DIRECTIVO EN FORMATO ENRIQUECIDO (HTML) CON LA IMAGEN DE LA FIRMA
+        function generarHtmlCorreo() {
             const tienda = document.getElementById('tienda').value.trim() || "[Nombre Tienda / ID]";
-            const fecha = document.getElementById('fecha').value;
+            const fecha = document.getElementById('fecha').value || "[Fecha]";
             const hora = document.getElementById('hora').value || "[Hora]";
             const nombreFirmante = document.getElementById('nombre_firma').value.trim() || "[Nombre del Encargado]";
             
@@ -634,39 +624,19 @@
             const estCajas = document.getElementById('badge_cajas').innerText;
             const estEquipos = document.getElementById('badge_equipos').innerText;
 
-            const mapaVisual = { "ÓPTIMO": "🟩 [ ÓPTIMO ]", "ADVERTENCIA": "🟨 [ ADVERTENCIA ]", "CRÍTICO": "🟥 [ CRÍTICO ]" };
+            const colores = { "ÓPTIMO": "#10b981", "ADVERTENCIA": "#f59e0b", "CRÍTICO": "#f43f5e" };
+            const insignias = {
+                "ÓPTIMO": `<span style="background-color:#10b981; color:white; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;">🟩 ÓPTIMO</span>`,
+                "ADVERTENCIA": `<span style="background-color:#f59e0b; color:white; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;">🟨 ADVERTENCIA</span>`,
+                "CRÍTICO": `<span style="background-color:#f43f5e; color:white; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;">🟥 CRÍTICO</span>`
+            };
 
-            let seccionPlanes = "=== PLAN DE ACCIÓN TÉCNICA Y TIEMPOS ESTIMADOS DE SOLUCIÓN ===\n";
             let accionesCorrectivas = "";
-
-            if (estWifi === "CRÍTICO") {
-                accionesCorrectivas += `- [RED WI-FI]: Intervención en sitio inmediata. Diagnóstico de canales saturados, verificación física de Access Points y escalamiento con ISP por degradación severa de umbrales corporativos. \n  * Tiempo Estimado de Solución (RTO): < 12 Horas.\n\n`;
-            } else if (estWifi === "ADVERTENCIA") {
-                accionesCorrectivas += `- [RED WI-FI]: Programación de optimización lógica de espectro inalámbrico en consola de administración. Mitigación de puntos ciegos reportados en tienda.\n  * Tiempo Estimado de Solución: 48 Horas.\n\n`;
-            }
-
-            if (estRack === "CRÍTICO") {
-                accionesCorrectivas += `- [RACK DE COMUNICACIONES]: Reordenamiento estructural crítico de cableado (patch cords), revisión obligatoria de contingencia por alertas en baterías de la UPS y reporte a infraestructura física por fallas en el aire acondicionado.\n  * Tiempo Estimado de Solución (RTO): 24 Horas.\n\n`;
-            } else if (estRack === "ADVERTENCIA") {
-                accionesCorrectivas += `- [RACK DE COMUNICACIONES]: Ejecución de tareas preventivas rutinarias (limpieza del gabinete de datos, actualización de bitácora física de control de accesos y solicitud de recarga para extintor en sitio).\n  * Tiempo Estimado de Solución: 3 a 5 Días Hábiles.\n\n`;
-            }
-
-            if (estCajas === "CRÍTICO") {
-                accionesCorrectivas += `- [FRENTE DE CAJAS]: Reemplazo inmediato de hardware inoperativo (CPU POS / Periféricos críticos) utilizando stock de contingencia del centro de soporte. Priorización en la estabilización de los controladores Surepos para evitar caída en la línea de cobro.\n  * Tiempo Estimado de Solución (RTO): < 4 Horas (Impacto Directo al Negocio).\n\n`;
-            } else if (estCajas === "ADVERTENCIA") {
-                accionesCorrectivas += `- [FRENTE DE CAJAS]: Mantenimiento de hardware preventivo en sitio. Calibración y limpieza óptica de escáneres/pistolas y purga de controladores lógicos de impresión térmica/láser.\n  * Tiempo Estimado de Solución: 24 Horas.\n\n`;
-            }
-
-            if (estEquipos === "CRÍTICO") {
-                accionesCorrectivas += `- [EQUIPOS MÓVILES/ADMIN]: Retiro y reemplazo de hardware inoperativo (Tabletas / PDAs) haciendo uso del stock de contingencia local.\n  * Tiempo Estimado de Solución (RTO): 24 Horas.\n\n`;
-            } else if (estEquipos === "ADVERTENCIA") {
-                accionesCorrectivas += `- [EQUIPOS MÓVILES/ADMIN]: Depuración de almacenamiento interno, borrado de temporales lógicos de sistema y actualización controlada de aplicativos.\n  * Tiempo Estimado de Solución: 48 Horas.\n\n`;
-            }
-
-            if (accionesCorrectivas === "") {
-                accionesCorrectivas = "No se requieren acciones correctivas urgentes en los sistemas evaluados. Mantener plan de monitoreo preventivo estándar.\n\n";
-            }
-            seccionPlanes += accionesCorrectivas;
+            if (estWifi !== "ÓPTIMO") accionesCorrectivas += `<li><b>[RED WI-FI]:</b> Acciones de estabilización inalámbrica estimadas en menos de 24 horas debido a alertas lógicas en la telemetría del canal.</li>`;
+            if (estRack !== "ÓPTIMO") accionesCorrectivas += `<li><b>[RACK COMUNICACIONES]:</b> Mitigación preventiva física del gabinete, reordenamiento de cordones ópticos y control ambiental.</li>`;
+            if (estCajas !== "ÓPTIMO") accionesCorrectivas += `<li><b>[FRENTE DE CAJAS]:</b> Mantenimiento preventivo en hardware crítico del ecosistema Surepos para asegurar la continuidad transaccional de cobro.</li>`;
+            if (estEquipos !== "ÓPTIMO") accionesCorrectivas += `<li><b>[DISPOSITIVOS MÓVILES]:</b> Depuración lógica de almacenamiento interno y actualización forzada de las aplicaciones core de operación.</li>`;
+            if (accionesCorrectivas === "") accionesCorrectivas = "<li>No se requieren acciones técnico-correctivas de urgencia. Mantener bitácora preventiva estándar.</li>";
 
             let rackStatus = [];
             if(document.getElementById('rack_organizado').checked) rackStatus.push("Organizado");
@@ -675,54 +645,52 @@
             if(document.getElementById('rack_ups').checked) rackStatus.push("UPS OK");
             if(document.getElementById('rack_bitacora').checked) rackStatus.push("Bitácora al día");
 
-            let cuerpo = `ASUNTO: Informe Técnico IT - Inspección de Infraestructura y POS - ${tienda} (${fecha} ${hora})\n\n`;
-            cuerpo += `Estimado Equipo Directivo,\n\nComparto el informe formal derivado de la auditoría y visita técnica de soporte realizada al punto de venta el día ${fecha} a las ${hora}.\n\n`;
-            cuerpo += `======================================================\n`;
-            cuerpo += `📊 DASHBOARD DE SALUD TECNOLÓGICA (SEMÁFOROS)\n`;
-            cuerpo += `======================================================\n`;
-            cuerpo += `ESTADO GLOBAL DE LA VISITA : ${mapaVisual[estGlobal]}\n\n`;
-            cuerpo += `Desglose de Subsistemas Evaluados:\n`;
-            cuerpo += `  [📶] Semáforo Red Wi-Fi        : ${mapaVisual[estWifi]}\n`;
-            cuerpo += `  [🗄️] Semáforo Rack Comun.      : ${mapaVisual[estRack]}\n`;
-            cuerpo += `  [🛒] Semáforo Frente Cajas     : ${mapaVisual[mapaVisual[estCajas] ? estCajas : "ÓPTIMO"]}\n`; 
-            cuerpo += `  [💻] Semáforo Equipos Móviles  : ${mapaVisual[estEquipos]}\n`;
-            cuerpo += `------------------------------------------------------\n\n`;
-            cuerpo += seccionPlanes;
-            cuerpo += `=== DETALLES MÉTRICOS DE LA REVISIÓN ===\n`;
-            cuerpo += `1. TELEMETRÍA DE RED INALÁBRICA:\n`;
-            cuerpo += `   - Velocidad de Subida : ${document.getElementById('wifi_carga').value || 'N/R'} Mbps\n`;
-            cuerpo += `   - Velocidad de Bajada : ${document.getElementById('wifi_descarga').value || 'N/R'} Mbps\n`;
-            cuerpo += `   - Latencia del Enlace : ${document.getElementById('wifi_latencia').value || 'N/R'} ms\n`;
-            cuerpo += `   - Potencia de Señal   : ${document.getElementById('wifi_senal').value || 'N/R'} Db\n`;
-            cuerpo += `   - Cobertura Crítica   : ${document.getElementById('wifi_cobertura').value.trim() || 'Sin novedades'}\n\n`;
-            cuerpo += `2. ELEMENTOS DEL GABINETE DE DATOS (RACK):\n`;
-            cuerpo += `   - Componentes validados: ${rackStatus.join(', ') || 'Ninguno (Revisión urgente requerida)'}\n`;
-            cuerpo += `   - Observaciones Rack    : "${document.getElementById('rack_observaciones').value.trim() || 'Sin observaciones lógicas o físicas.'}"\n\n`;
-            cuerpo += `3. DIAGNÓSTICO DE COMPONENTES DE CAJA (POS):\n`;
-            cuerpo += `   - Sistema Surepos     : ${document.getElementById('caja_surepos').value}\n`;
-            cuerpo += `   - CPU de Caja         : ${document.getElementById('caja_cpu').value}\n`;
-            cuerpo += `   - Escáner Fijo        : ${document.getElementById('caja_escaner').value}\n`;
-            cuerpo += `   - Pistola Cód. Barras : ${document.getElementById('caja_pistola').value}\n`;
-            cuerpo += `   - Impresora Térmica   : ${document.getElementById('caja_termica').value}\n`;
-            cuerpo += `   - Impresora Láser     : ${document.getElementById('caja_laser').value}\n`;
-            cuerpo += `   - Reportes de Cajeros : "${document.getElementById('observaciones_cajeros').value.trim() || 'Sin comentarios o alertas por parte de los cajeros.'}"\n\n`;
-            cuerpo += `4. ESTADO DE HARDWARE COMPLEMENTARIO (MÓVILES/ADMIN):\n`;
-            cuerpo += `   - Dispositivos Tabletas  : ${document.getElementById('estado_tabletas').value}\n`;
-            cuerpo += `   - Dispositivos PDAs      : ${document.getElementById('estado_pdas').value}\n`;
-            cuerpo += `   - PCs Administrativos    : ${document.getElementById('estado_pcs').value}\n`;
-            cuerpo += `   - Observaciones Hardware: "${document.getElementById('equipos_observaciones').value.trim() || 'Sin novedades en el parque tecnológico móvil o de oficina.'}"\n\n`;
-            cuerpo += `5. INSIGHTS Y CAPTURA DE NECESIDADES EN SITIO:\n`;
-            cuerpo += `   - Feedback Administrativo: "${document.getElementById('notas_encargado').value.trim() || 'Sin comentarios adicionales por parte de la operacion.'}"\n\n`;
-            cuerpo += `6. CIERRE DE CONFORMIDAD:\n`;
-            cuerpo += `   - Validado y aprobado por : ${nombreFirmante}\n`;
-            cuerpo += `   - Firma Digital Recibida  : [ BIOMÉTRICA TÁCTIL REGISTRADA EN SISTEMA ]\n\n`;
-            cuerpo += `Quedo atento a la asignación de recursos y despliegues técnicos pertinentes.\n\nSaludos cordiales,\nLíder Regional de Soporte\nÁrea de Teknología`;
-            return cuerpo;
+            // EXTRAER LA FIRMA DEL LIENZO COMO IMAGEN BASE64
+            const imagenFirmaB64 = canvas.toDataURL("image/png");
+
+            let html = `<div><b>ASUNTO:</b> Informe Técnico IT - Inspección de Infraestructura y POS - ${tienda} (${fecha})</div><br>`;
+            html += `<p>Estimado Equipo Directivo,</p>`;
+            html += `<p>Comparto el informe formal derivado de la auditoría y visita técnica de soporte realizada al punto de venta el día ${fecha} a las ${hora}.</p>`;
+            html += `<div style="border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; background-color: #f8fafc; margin: 15px 0;">`;
+            html += `<h4 style="margin-top:0; color:#1e1b4b; border-bottom:1px solid #cbd5e1; padding-bottom:5px;">📊 DASHBOARD DE SALUD TECNOLÓGICA</h4>`;
+            html += `<p><b>ESTADO GLOBAL DE LA VISITA:</b> <span style="background-color:${colores[estGlobal]}; color:white; padding:4px 10px; border-radius:4px; font-weight:bold;">${estGlobal}</span></p>`;
+            html += `<ul style="list-style:none; padding-left:0;">`;
+            html += `<li style="margin-bottom:6px;">📡 Semáforo Red Wi-Fi: ${insignias[estWifi]}</li>`;
+            html += `<li style="margin-bottom:6px;">🗄️ Semáforo Rack Comun.: ${insignias[estRack]}</li>`;
+            html += `<li style="margin-bottom:6px;">🛒 Semáforo Frente Cajas: ${insignias[estCajas]}</li>`;
+            html += `<li style="margin-bottom:6px;">💻 Semáforo Equipos Móviles: ${insignias[estEquipos]}</li>`;
+            html += `</ul>`;
+            html += `</div>`;
+            
+            html += `<div style="margin: 15px 0;">`;
+            html += `<b>🛠️ PLAN DE ACCIÓN RECOMENDADO:</b>`;
+            html += `<ul style="padding-left:20px; margin-top:5px;">${accionesCorrectivas}</ul>`;
+            html += `</div>`;
+
+            html += `<div style="margin: 15px 0;">`;
+            html += `<b>📋 TELEMETRÍA Y OBSERVACIONES EN CAMPO:</b><br>`;
+            html += `- <b>Métricas Wi-Fi:</b> Carga: ${document.getElementById('wifi_carga').value || 'N/R'} Mbps | Descarga: ${document.getElementById('wifi_descarga').value || 'N/R'} Mbps | Latencia: ${document.getElementById('wifi_latencia').value || 'N/R'} ms.<br>`;
+            html += `- <b>Infraestructura Rack:</b> ${rackStatus.join(', ') || 'Revisión solicitada'} | <i>"${document.getElementById('rack_observaciones').value.trim() || 'Sin observaciones logísticas.'}"</i><br>`;
+            html += `- <b>Frente Cajas (POS):</b> Surepos (${document.getElementById('caja_surepos').value}) | Impresora Térmica (${document.getElementById('caja_termica').value}) | <i>"${document.getElementById('observaciones_cajeros').value.trim() || 'Sin novedades operativas por los cajeros.'}"</i><br>`;
+            html += `- <b>Insights Encargado:</b> <i>"${document.getElementById('notas_encargado').value.trim() || 'Operación sin requerimientos extraordinarios.'}"</i>`;
+            html += `</div><br>`;
+
+            html += `<div style="margin-top:20px; border-top:1px solid #e2e8f0; padding-top:10px;">`;
+            html += `<b>🤝 CIERRE DE CONFORMIDAD EN SITIO:</b><br>`;
+            html += `Validado por: <b>${nombreFirmante}</b> (Encargado / Jefe de Tienda)<br><br>`;
+            html += `<b>Firma Digital Recibida:</b><br>`;
+            // AQUÍ SE IMPRIME LA IMAGEN DE LA FIRMA DIRECTAMENTE EN EL CUERPO
+            html += `<img src="${imagenFirmaB64}" alt="Firma Autorizada" style="border: 1px dashed #cbd5e1; background-color:#f8fafc; max-width:260px; height:auto; margin-top:5px; display:block;"/>`;
+            html += `</div><br>`;
+            
+            html += `<p style="font-size:12px; color:#64748b;">Cordialmente,<br><b>Líder Regional de Soporte</b><br>Área de Teknología</p>`;
+            
+            return html;
         }
 
         function generarTextoPPT() {
             const tienda = document.getElementById('tienda').value.trim() || "[Nombre Tienda / ID]";
-            const fecha = document.getElementById('fecha').value;
+            const fecha = document.getElementById('fecha').value || "[Fecha]";
             const hora = document.getElementById('hora').value || "[Hora]";
             const estado = document.getElementById('semaforo_texto').innerText;
             const nombreFirmante = document.getElementById('nombre_firma').value.trim() || "[Nombre del Encargado]";
@@ -762,14 +730,19 @@
             calcularTodo(); 
             const modal = document.getElementById('modal');
             const titulo = document.getElementById('modal_titulo');
-            const texto = document.getElementById('modal_texto');
+            const textoArea = document.getElementById('modal_texto');
+            const htmlPreview = document.getElementById('modal_preview_html');
 
             if(tipo === 'correo') {
-                titulo.innerText = "📧 Formato de Correo Directivo";
-                texto.value = generarTextoCorreo();
+                titulo.innerText = "📧 Formato de Correo Directivo (Con Firma)";
+                textoArea.classList.add('hidden'); // Ocultamos el textarea plano
+                htmlPreview.classList.remove('hidden'); // Mostramos la vista previa con diseño
+                htmlPreview.innerHTML = generarHtmlCorreo();
             } else if(tipo === 'ppt') {
                 titulo.innerText = "📊 Guía de Diapositivas para Gerencia";
-                texto.value = generarTextoPPT();
+                htmlPreview.classList.add('hidden'); // Ocultamos la vista previa HTML
+                textoArea.classList.remove('hidden'); // Mostramos el textarea plano
+                textoArea.value = generarTextoPPT();
             }
 
             modal.classList.remove('hidden');
@@ -782,16 +755,41 @@
             modal.classList.add('hidden');
         }
 
+        // LÓGICA DE COPIADO INTELIGENTE (COPIA TEXTO CON IMAGEN INCLUIDA SI ES CORREO)
         async function copiarContenido() {
-            const texto = document.getElementById('modal_texto').value;
-            try {
-                await navigator.clipboard.writeText(texto);
-                alert('¡Contenido copiado al portapapeles con éxito!');
-            } catch (err) {
-                const textoArea = document.getElementById('modal_texto');
-                textoArea.select();
-                document.execCommand('copy');
-                alert('¡Contenido copiado con éxito!');
+            const htmlPreview = document.getElementById('modal_preview_html');
+            const textoArea = document.getElementById('modal_texto');
+            
+            // Si la vista previa HTML está activa (Caso Correo)
+            if (!htmlPreview.classList.contains('hidden')) {
+                try {
+                    // Creamos bloques de datos enriquecidos para el portapapeles
+                    const blobHtml = new Blob([htmlPreview.innerHTML], { type: 'text/html' });
+                    const blobText = new Blob([htmlPreview.innerText], { type: 'text/plain' });
+                    const datosCopiado = [new ClipboardItem({ 'text/html': blobHtml, 'text/plain': blobText })];
+                    
+                    await navigator.clipboard.write(datosCopiado);
+                    alert('¡Correo copiado con éxito! Ya puedes abrir Outlook o Gmail y pegarlo directamente (Ctrl+V); la estructura y la firma aparecerán visualmente.');
+                } catch (err) {
+                    // Fallback de selección para navegadores móviles antiguos
+                    const range = document.createRange();
+                    range.selectNode(htmlPreview);
+                    window.getSelection().removeAllRanges();
+                    window.getSelection().addRange(range);
+                    document.execCommand('copy');
+                    window.getSelection().removeAllRanges();
+                    alert('¡Contenido seleccionado y copiado al portapapeles!');
+                }
+            } else {
+                // Caso PPT (Texto Plano)
+                try {
+                    await navigator.clipboard.writeText(textoArea.value);
+                    alert('¡Estructura PPT copiada al portapapeles con éxito!');
+                } catch (err) {
+                    textoArea.select();
+                    document.execCommand('copy');
+                    alert('¡Contenido copiado!');
+                }
             }
         }
     </script>
