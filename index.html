@@ -314,12 +314,10 @@
     </div>
 
     <script>
-        // ==========================================
-        // CONFIGURACIÓN DE URL DE BASE DE DATOS / API
-        // ==========================================
-        // Reemplaza esta URL con tu endpoint de Power Automate, Google Apps Script o tu API REST.
+        // URL de tu Apps Script de Google Sheets
         const DATABASE_API_URL = "https://script.google.com/macros/s/AKfycbwqXoNQbJbGu7UDOoNVcqnDV4zEJhOts4-Zi9OTPwxRIu0RDB1F9seM4S3vFsiY1ASR/exec";
 
+        // Inicialización automática de Fecha y Hora actuales al cargar
         const ahora = new Date();
         document.getElementById('fecha').valueAsDate = ahora;
         
@@ -327,6 +325,7 @@
         const mins = String(ahora.getMinutes()).padStart(2, '0');
         document.getElementById('hora').value = `${hrs}:${mins}`;
 
+        // LÓGICA DEL LIENZO DE FIRMA TÁCTIL
         const canvas = document.getElementById('firma_canvas');
         const ctx = canvas.getContext('2d');
         let dibujando = false;
@@ -508,7 +507,7 @@
         }
 
         // ==========================================
-        // LÓGICA DE ENVÍO CENTRALIZADO A LA BASE DE DATOS
+        // LÓGICA DE ENVÍO CORREGIDA PARA GOOGLE SHEETS
         // ==========================================
         async function guardarEnBD() {
             calcularTodo();
@@ -518,104 +517,48 @@
             const hora = document.getElementById('hora').value;
             const nombreFirma = document.getElementById('nombre_firma').value.trim();
 
-            // Validación Obligatoria Básica para Auditoría
             if (!tienda || !fecha || !hora || !nombreFirma) {
-                alert("❌ Error de validación: Para consolidar en el tablero de Power BI, es obligatorio ingresar la Tienda/ID, Fecha, Hora y Nombre del Firmante de conformidad.");
+                alert("❌ Campos incompletos: Es obligatorio ingresar la Tienda, Fecha, Hora y Nombre del Responsable para guardar en la base de datos.");
                 return;
             }
 
             const btn = document.getElementById('btn_guardar_bd');
-            const textoOriginal = btn.innerHTML;
-            
-            // Visual Feedback de Carga
             btn.disabled = true;
-            btn.className = "w-full bg-slate-400 text-white text-sm font-bold py-3 px-4 rounded flex items-center justify-center gap-2 cursor-not-allowed";
-            btn.innerHTML = "⏳ Transmitiendo Datos Corporativos...";
+            btn.innerText = "⏳ Guardando en Google Sheets...";
 
-            // Recopilación de toda la Estructura de Datos (Novedades y Métricas)
+            // Empaquetamos la información con las llaves exactas del Apps Script
             const payload = {
                 tienda: tienda,
                 fecha: fecha,
                 hora: hora,
                 nombre_firmante: nombreFirma,
                 estado_global: document.getElementById('semaforo_texto').innerText,
-                
-                // Red Wi-Fi
-                wifi_carga_mbps: document.getElementById('wifi_carga').value || 0,
-                wifi_descarga_mbps: document.getElementById('wifi_descarga').value || 0,
-                wifi_latencia_ms: document.getElementById('wifi_latencia').value || 0,
-                wifi_senal_db: document.getElementById('wifi_senal').value || 0,
-                wifi_novedades_cobertura: document.getElementById('wifi_cobertura').value.trim(),
-                wifi_semaforo: document.getElementById('badge_wifi').innerText,
-
-                // Rack de Datos
-                rack_organizado: document.getElementById('rack_organizado').checked ? "SI" : "NO",
-                rack_aire_operativo: document.getElementById('rack_aire').checked ? "SI" : "NO",
-                rack_extintor_ok: document.getElementById('rack_extintor').checked ? "SI" : "NO",
-                rack_ups_operativa: document.getElementById('rack_ups').checked ? "SI" : "NO",
-                rack_bitacora_ok: document.getElementById('rack_bitacora').checked ? "SI" : "NO",
-                rack_novedades_observaciones: document.getElementById('rack_observaciones').value.trim(),
-                rack_semaforo: document.getElementById('badge_rack').innerText,
-
-                // Ecosistema Cajas (POS)
-                pos_surepos: document.getElementById('caja_surepos').value,
-                pos_cpu: document.getElementById('caja_cpu').value,
-                pos_escaner: document.getElementById('caja_escaner').value,
-                pos_pistola: document.getElementById('caja_pistola').value,
-                pos_termica: document.getElementById('caja_termica').value,
-                pos_laser: document.getElementById('caja_laser').value,
-                pos_novedades_cajeros: document.getElementById('observaciones_cajeros').value.trim(),
-                pos_semaforo: document.getElementById('badge_cajas').innerText,
-
-                // Dispositivos Móviles
-                movil_tabletas: document.getElementById('estado_tabletas').value,
-                movil_pdas: document.getElementById('estado_pdas').value,
-                movil_pcs_admin: document.getElementById('estado_pcs').value,
-                movil_novedades_hardware: document.getElementById('equipos_observaciones').value.trim(),
-                movil_semaforo: document.getElementById('badge_equipos').innerText,
-
-                // Gestión Humana e Insights
-                encargado_solicitudes_novedades: document.getElementById('notas_encargado').value.trim(),
-                
-                // Firma Digitalizada en formato de texto Base64 largo
-                firma_digital_base64: canvas.toDataURL("image/png")
+                wifi_novedades_cobertura: document.getElementById('wifi_cobertura').value.trim() || 'Sin novedades',
+                rack_novedades_observaciones: document.getElementById('rack_observaciones').value.trim() || 'Sin observaciones',
+                pos_novedades_cajeros: document.getElementById('observaciones_cajeros').value.trim() || 'Sin novedades',
+                movil_novedades_hardware: document.getElementById('equipos_observaciones').value.trim() || 'Sin novedades',
+                encargado_solicitudes_novedades: document.getElementById('notas_encargado').value.trim() || 'Sin notas'
             };
 
             try {
-                if (DATABASE_API_URL.includes("TU_URL_AQUI")) {
-                    // Alerta educativa si aún no configuran la URL
-                    console.log("JSON generado correctamente para Power BI:", payload);
-                    alert("⚠️ ¡Estructura de Datos Lista!\n\nEl sistema capturó perfectamente todas las métricas, novedades y firma. Para guardarlo de verdad, debes configurar la URL de tu API o Power Automate en la línea 241 del código.");
-                } else {
-                    // Envío Real mediante Petición Asíncrona
-                    const response = await fetch(DATABASE_API_URL, {
-    method: 'POST',
-    mode: 'no-cors', // <-- ESTA LÍNEA ES VITAL PARA GOOGLE SHEETS
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(datosDelFormulario) // Aquí va el nombre de tu variable de datos
-})
-.then(() => {
-    alert("¡Registro guardado con éxito en Google Sheets! 🚀");
-})
-.catch(error => {
-    console.error("Error:", error);
-    alert("Error de Conexión: No se pudo transmitir la información...");
-});
- 
-                    } else {
-                        throw new Error("Respuesta no satisfactoria del servidor remoto.");
-                    }
-                }
+                // Petición HTTP POST optimizada para Google Sheets (no-cors activa)
+                await fetch(DATABASE_API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                // Al usar 'no-cors', asumimos éxito si la promesa se cumple
+                alert("✅ ¡Registro Exitoso! Tus datos y novedades han sido almacenados en Google Sheets de manera segura.");
+                
             } catch (error) {
-                console.error(error);
-                alert("❌ Error de Conexión: No se pudo transmitir la información a la base de datos centralizada. Verifique la conexión de red o el estado del endpoint.");
+                console.error("Error en la transmisión:", error);
+                alert("❌ Error de transmisión: No se pudo conectar con el servidor de la hoja de cálculo.");
             } finally {
-                // Restauración del Botón
                 btn.disabled = false;
-                btn.className = "w-full bg-indigo-600 active:bg-indigo-800 lg:hover:bg-indigo-700 text-white text-sm font-bold py-3 px-4 rounded transition-all shadow-md flex items-center justify-center gap-2";
-                btn.innerHTML = textoOriginal;
+                btn.innerText = "💾 Guardar Registro en BD";
             }
         }
 
@@ -688,7 +631,7 @@
             };
 
             let accionesCorrectivas = "";
-            if (estWifi !== "ÓPTIMO") accionesCorrectivas += `<li><b>[RED WI-FI]:</b> Acciones de estabilización inalámbrica estimadas en menos de 24 horas debido a alertas lógicas en la telemetría del canal.</li>`;
+            if (estWifi !== "ÓPTIMO") accionesCorrectivas += `<li><b>[RED WI-FI]:</b> Acciones de estabilización inalámbrica inalámbrica estimadas en menos de 24 horas debido a alertas lógicas en la telemetría del canal.</li>`;
             if (estRack !== "ÓPTIMO") accionesCorrectivas += `<li><b>[RACK COMUNICACIONES]:</b> Mitigación preventiva física del gabinete, reordenamiento de cordones ópticos y control ambiental.</li>`;
             if (estCajas !== "ÓPTIMO") accionesCorrectivas += `<li><b>[FRENTE DE CAJAS]:</b> Mantenimiento preventivo en hardware crítico del ecosistema Surepos para asegurar la continuidad transaccional de cobro.</li>`;
             if (estEquipos !== "ÓPTIMO") accionesCorrectivas += `<li><b>[DISPOSITIVOS MÓVILES]:</b> Depuración lógica de almacenamiento interno y actualización forzada de las aplicaciones core de operación.</li>`;
