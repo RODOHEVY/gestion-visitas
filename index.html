@@ -589,13 +589,21 @@
                 } else {
                     // Envío Real mediante Petición Asíncrona
                     const response = await fetch(DATABASE_API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (response.ok) {
-                        alert("✅ ¡Registro Exitoso!\nLos datos y novedades han sido almacenados en la base de datos centralizada. Ya están listos para reflejarse en Power BI al actualizar el origen.");
+    method: 'POST',
+    mode: 'no-cors', // <-- ESTA LÍNEA ES VITAL PARA GOOGLE SHEETS
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(datosDelFormulario) // Aquí va el nombre de tu variable de datos
+})
+.then(() => {
+    alert("¡Registro guardado con éxito en Google Sheets! 🚀");
+})
+.catch(error => {
+    console.error("Error:", error);
+    alert("Error de Conexión: No se pudo transmitir la información...");
+});
+ 
                     } else {
                         throw new Error("Respuesta no satisfactoria del servidor remoto.");
                     }
