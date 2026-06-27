@@ -59,7 +59,7 @@
                         <input id="wifi_senal" type="number" oninput="calcularTodo()" placeholder="Ej: 45" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-colors">
                     </div>
                     <div class="col-span-2 sm:col-span-4">
-                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Zonas con baja cobertura o interferencias</label>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Zonas con baja cobertura o interferencias (Novedades)</label>
                         <textarea id="wifi_cobertura" rows="2" placeholder="Describa si hay puntos ciegos en la tienda..." class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
                     </div>
                 </div>
@@ -91,7 +91,7 @@
                         <span class="text-sm font-medium">Bitácora de Accesos al Día</span>
                     </label>
                     <div class="sm:col-span-2 mt-2">
-                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Observaciones / Hallazgos Físicos del Rack</label>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Observaciones / Hallazgos Físicos del Rack (Novedades)</label>
                         <textarea id="rack_observaciones" rows="2" placeholder="Observaciones técnicas..." class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
                     </div>
                 </div>
@@ -151,7 +151,7 @@
                         </select>
                     </div>
                     <div class="sm:col-span-2 lg:col-span-3">
-                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Observaciones de los Cajeros</label>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Observaciones de los Cajeros (Novedades)</label>
                         <textarea id="observaciones_cajeros" rows="2" placeholder="Comentarios de cajas..." class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
                     </div>
                 </div>
@@ -187,7 +187,7 @@
                         </select>
                     </div>
                     <div class="sm:col-span-3">
-                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Observaciones de Dispositivos</label>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Observaciones de Dispositivos (Novedades)</label>
                         <textarea id="equipos_observaciones" rows="2" placeholder="Detalles de hardware..." class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
                     </div>
                 </div>
@@ -198,14 +198,14 @@
                     🗣️ Conversación con el Encargado del Punto
                 </h2>
                 <div>
-                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Datos clave del personal administrativo</label>
+                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Datos clave / Solicitudes administrativas (Novedades)</label>
                     <textarea id="notas_encargado" rows="3" placeholder="Solicitudes o quejas..." class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
                 </div>
             </div>
 
             <div class="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200">
                 <h2 class="text-base font-bold text-slate-900 border-b pb-2 mb-3 flex items-center gap-2">
-                    ✍️ Validación de Visita Técnica
+                    ✍️ Validación de Visita Técnico
                 </h2>
                 <p class="text-xs text-slate-500 mb-4">Solicite al Jefe de Tienda / Encargado registrar su nombre completo y validar la conformidad de la inspección con su firma:</p>
                 
@@ -259,16 +259,22 @@
                     </div>
                 </div>
 
-                <button onclick="calcularTodo()" class="w-full bg-indigo-600 active:bg-indigo-800 lg:hover:bg-indigo-700 text-white text-sm font-semibold py-3 sm:py-2 px-4 rounded transition-colors shadow">
-                    🔄 Procesar e Informar
-                </button>
+                <div class="space-y-2.5">
+                    <button onclick="calcularTodo()" class="w-full bg-slate-700 hover:bg-slate-800 text-white text-xs font-semibold py-2 px-4 rounded transition-colors shadow">
+                        🔄 Recalcular Semáforos
+                    </button>
+                    
+                    <button id="btn_guardar_bd" onclick="guardarEnBD()" class="w-full bg-indigo-600 active:bg-indigo-800 lg:hover:bg-indigo-700 text-white text-sm font-bold py-3 px-4 rounded transition-all shadow-md flex items-center justify-center gap-2">
+                        <span>💾 Guardar Registro en BD</span>
+                    </button>
+                </div>
             </div>
 
             <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4">
                 <h3 class="text-sm font-bold text-slate-900 border-b pb-2">📂 Entregables Automatizados</h3>
                 
                 <button onclick="descargarExcel()" class="w-full flex items-center justify-between p-3.5 bg-emerald-50 active:bg-emerald-200 lg:hover:bg-emerald-100 rounded-lg text-left border border-emerald-200 text-sm font-medium transition-colors">
-                    <span class="text-slate-700 flex items-center gap-2">📊 Exportar Reporte a Excel (.xlsx)</span>
+                    <span class="text-slate-700 flex items-center gap-2">📊 Exportar Reporte Local (.xlsx)</span>
                     <span class="text-emerald-600 font-bold">⬇️</span>
                 </button>
 
@@ -308,7 +314,12 @@
     </div>
 
     <script>
-        // Inicialización automática de Fecha y Hora actuales al cargar
+        // ==========================================
+        // CONFIGURACIÓN DE URL DE BASE DE DATOS / API
+        // ==========================================
+        // Reemplaza esta URL con tu endpoint de Power Automate, Google Apps Script o tu API REST.
+        const DATABASE_API_URL = "https://script.google.com/macros/s/AKfycbwqXoNQbJbGu7UDOoNVcqnDV4zEJhOts4-Zi9OTPwxRIu0RDB1F9seM4S3vFsiY1ASR/exec";
+
         const ahora = new Date();
         document.getElementById('fecha').valueAsDate = ahora;
         
@@ -316,7 +327,6 @@
         const mins = String(ahora.getMinutes()).padStart(2, '0');
         document.getElementById('hora').value = `${hrs}:${mins}`;
 
-        // LÓGICA DEL LIENZO DE FIRMA TÁCTIL
         const canvas = document.getElementById('firma_canvas');
         const ctx = canvas.getContext('2d');
         let dibujando = false;
@@ -326,9 +336,7 @@
             const nuevoAncho = Math.floor(rect.width);
             const nuevoAlto = Math.floor(rect.height);
 
-            if (canvas.width === nuevoAncho && canvas.height === nuevoAlto) {
-                return;
-            }
+            if (canvas.width === nuevoAncho && canvas.height === nuevoAlto) return;
 
             let canvasRespaldo = null;
             if (canvas.width > 0 && canvas.height > 0) {
@@ -343,7 +351,7 @@
             
             ctx.lineWidth = 2.5;
             ctx.lineCap = 'round';
-            ctx.strokeStyle = '#1e1b4b'; // Azul índigo oscuro corporativo
+            ctx.strokeStyle = '#1e1b4b';
 
             if (canvasRespaldo) {
                 ctx.drawImage(canvasRespaldo, 0, 0, canvasRespaldo.width, canvasRespaldo.height, 0, 0, nuevoAncho, nuevoAlto);
@@ -357,10 +365,7 @@
             const rect = canvas.getBoundingClientRect();
             const clienteX = e.touches ? e.touches[0].clientX : e.clientX;
             const clienteY = e.touches ? e.touches[0].clientY : e.clientY;
-            return {
-                x: clienteX - rect.left,
-                y: clienteY - rect.top
-            };
+            return { x: clienteX - rect.left, y: clienteY - rect.top };
         }
 
         function iniciarDibujo(e) {
@@ -377,18 +382,12 @@
             ctx.stroke();
         }
 
-        function detenerDibujo() {
-            dibujando = false;
-        }
-
-        function limpiarFirma() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
+        function detenerDibujo() { dibujando = false; }
+        function limpiarFirma() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
         canvas.addEventListener('mousedown', iniciarDibujo);
         canvas.addEventListener('mousemove', moverDibujo);
         window.addEventListener('mouseup', detenerDibujo);
-
         canvas.addEventListener('touchstart', iniciarDibujo);
         canvas.addEventListener('touchmove', moverDibujo);
         window.addEventListener('touchend', detenerDibujo);
@@ -397,37 +396,21 @@
             const badge = document.getElementById(idElemento);
             badge.innerText = estado;
             badge.className = "px-2.5 py-1 rounded-full text-[10px] font-bold text-white uppercase tracking-wider transition-colors duration-300";
-            
-            if (estado === "CRÍTICO") {
-                badge.classList.add("bg-rose-500");
-            } else if (estado === "ADVERTENCIA") {
-                badge.classList.add("bg-amber-400");
-            } else {
-                badge.classList.add("bg-emerald-500");
-            }
+            if (estado === "CRÍTICO") badge.classList.add("bg-rose-500");
+            else if (estado === "ADVERTENCIA") badge.classList.add("bg-amber-400");
+            else badge.classList.add("bg-emerald-500");
         }
 
         function colorizarInput(idElemento, estado, estaVacio) {
             const input = document.getElementById(idElemento);
-            input.classList.remove(
-                'bg-slate-50', 'border-slate-300', 'focus:ring-indigo-500',
-                'bg-emerald-50', 'border-emerald-300', 'focus:ring-emerald-500',
-                'bg-amber-50', 'border-amber-300', 'focus:ring-amber-500',
-                'bg-rose-50', 'border-rose-300', 'focus:ring-rose-500'
-            );
-
+            input.classList.remove('bg-slate-50', 'border-slate-300', 'focus:ring-indigo-500', 'bg-emerald-50', 'border-emerald-300', 'focus:ring-emerald-500', 'bg-amber-50', 'border-amber-300', 'focus:ring-amber-500', 'bg-rose-50', 'border-rose-300', 'focus:ring-rose-500');
             if (estaVacio) {
                 input.classList.add('bg-slate-50', 'border-slate-300', 'focus:ring-indigo-500');
                 return;
             }
-
-            if (estado === "CRÍTICO") {
-                input.classList.add('bg-rose-50', 'border-rose-300', 'focus:ring-rose-500');
-            } else if (estado === "ADVERTENCIA") {
-                input.classList.add('bg-amber-50', 'border-amber-300', 'focus:ring-amber-500');
-            } else {
-                input.classList.add('bg-emerald-50', 'border-emerald-300', 'focus:ring-emerald-500');
-            }
+            if (estado === "CRÍTICO") input.classList.add('bg-rose-50', 'border-rose-300', 'focus:ring-rose-500');
+            else if (estado === "ADVERTENCIA") input.classList.add('bg-amber-50', 'border-amber-300', 'focus:ring-amber-500');
+            else input.classList.add('bg-emerald-50', 'border-emerald-300', 'focus:ring-emerald-500');
         }
 
         function calcularTodo() {
@@ -470,13 +453,9 @@
             colorizarInput('wifi_senal', estSenal, rawSenal === "");
 
             let estadoWifi = "ÓPTIMO";
-            if (rawSubida==="" && rawBajada==="" && rawLatencia==="" && rawSenal==="") {
-                estadoWifi = "ÓPTIMO"; 
-            } else if (estSubida === "CRÍTICO" || estBajada === "CRÍTICO" || estLatencia === "CRÍTICO" || estSenal === "CRÍTICO") {
-                estadoWifi = "CRÍTICO";
-            } else if (estSubida === "ADVERTENCIA" || estBajada === "ADVERTENCIA" || estLatencia === "ADVERTENCIA" || estSenal === "ADVERTENCIA") {
-                estadoWifi = "ADVERTENCIA";
-            }
+            if (rawSubida==="" && rawBajada==="" && rawLatencia==="" && rawSenal==="") estadoWifi = "ÓPTIMO"; 
+            else if (estSubida === "CRÍTICO" || estBajada === "CRÍTICO" || estLatencia === "CRÍTICO" || estSenal === "CRÍTICO") estadoWifi = "CRÍTICO";
+            else if (estSubida === "ADVERTENCIA" || estBajada === "ADVERTENCIA" || estLatencia === "ADVERTENCIA" || estSenal === "ADVERTENCIA") estadoWifi = "ADVERTENCIA";
             actualizarEstiloBadge('badge_wifi', estadoWifi);
 
             let rackFallas = 0;
@@ -487,11 +466,8 @@
             if(!document.getElementById('rack_bitacora').checked) rackFallas++;
 
             let estadoRack = "ÓPTIMO";
-            if (rackFallas >= 3) {
-                estadoRack = "CRÍTICO";
-            } else if (rackFallas > 0) {
-                estadoRack = "ADVERTENCIA";
-            }
+            if (rackFallas >= 3) estadoRack = "CRÍTICO";
+            else if (rackFallas > 0) estadoRack = "ADVERTENCIA";
             actualizarEstiloBadge('badge_rack', estadoRack);
 
             const s_surepos = document.getElementById('caja_surepos').value;
@@ -502,11 +478,8 @@
             const s_laser = document.getElementById('caja_laser').value;
 
             let estadoCajas = "ÓPTIMO";
-            if (s_surepos === "Crítico" || s_cpu === "Crítico" || s_escaner === "Crítico" || s_pistola === "Crítico" || s_termica === "Crítico" || s_laser === "Crítico") {
-                estadoCajas = "CRÍTICO";
-            } else if (s_surepos === "Mantenimiento" || s_cpu === "Mantenimiento" || s_escaner === "Mantenimiento" || s_pistola === "Mantenimiento" || s_termica === "Mantenimiento" || s_laser === "Mantenimiento") {
-                estadoCajas = "ADVERTENCIA";
-            }
+            if (s_surepos === "Crítico" || s_cpu === "Crítico" || s_escaner === "Crítico" || s_pistola === "Crítico" || s_termica === "Crítico" || s_laser === "Crítico") estadoCajas = "CRÍTICO";
+            else if (s_surepos === "Mantenimiento" || s_cpu === "Mantenimiento" || s_escaner === "Mantenimiento" || s_pistola === "Mantenimiento" || s_termica === "Mantenimiento" || s_laser === "Mantenimiento") estadoCajas = "ADVERTENCIA";
             actualizarEstiloBadge('badge_cajas', estadoCajas);
 
             const t_status = document.getElementById('estado_tabletas').value;
@@ -514,11 +487,8 @@
             const pc_status = document.getElementById('estado_pcs').value;
 
             let estadoEquipos = "ÓPTIMO";
-            if (t_status === "Crítico" || p_status === "Crítico" || pc_status === "Crítico") {
-                estadoEquipos = "CRÍTICO";
-            } else if (t_status === "Mantenimiento" || p_status === "Mantenimiento" || pc_status === "Mantenimiento") {
-                estadoEquipos = "ADVERTENCIA";
-            }
+            if (t_status === "Crítico" || p_status === "Crítico" || pc_status === "Crítico") estadoEquipos = "CRÍTICO";
+            else if (t_status === "Mantenimiento" || p_status === "Mantenimiento" || pc_status === "Mantenimiento") estadoEquipos = "ADVERTENCIA";
             actualizarEstiloBadge('badge_equipos', estadoEquipos);
 
             const circulo = document.getElementById('semaforo_circulo');
@@ -537,9 +507,112 @@
             }
         }
 
+        // ==========================================
+        // LÓGICA DE ENVÍO CENTRALIZADO A LA BASE DE DATOS
+        // ==========================================
+        async function guardarEnBD() {
+            calcularTodo();
+
+            const tienda = document.getElementById('tienda').value.trim();
+            const fecha = document.getElementById('fecha').value;
+            const hora = document.getElementById('hora').value;
+            const nombreFirma = document.getElementById('nombre_firma').value.trim();
+
+            // Validación Obligatoria Básica para Auditoría
+            if (!tienda || !fecha || !hora || !nombreFirma) {
+                alert("❌ Error de validación: Para consolidar en el tablero de Power BI, es obligatorio ingresar la Tienda/ID, Fecha, Hora y Nombre del Firmante de conformidad.");
+                return;
+            }
+
+            const btn = document.getElementById('btn_guardar_bd');
+            const textoOriginal = btn.innerHTML;
+            
+            // Visual Feedback de Carga
+            btn.disabled = true;
+            btn.className = "w-full bg-slate-400 text-white text-sm font-bold py-3 px-4 rounded flex items-center justify-center gap-2 cursor-not-allowed";
+            btn.innerHTML = "⏳ Transmitiendo Datos Corporativos...";
+
+            // Recopilación de toda la Estructura de Datos (Novedades y Métricas)
+            const payload = {
+                tienda: tienda,
+                fecha: fecha,
+                hora: hora,
+                nombre_firmante: nombreFirma,
+                estado_global: document.getElementById('semaforo_texto').innerText,
+                
+                // Red Wi-Fi
+                wifi_carga_mbps: document.getElementById('wifi_carga').value || 0,
+                wifi_descarga_mbps: document.getElementById('wifi_descarga').value || 0,
+                wifi_latencia_ms: document.getElementById('wifi_latencia').value || 0,
+                wifi_senal_db: document.getElementById('wifi_senal').value || 0,
+                wifi_novedades_cobertura: document.getElementById('wifi_cobertura').value.trim(),
+                wifi_semaforo: document.getElementById('badge_wifi').innerText,
+
+                // Rack de Datos
+                rack_organizado: document.getElementById('rack_organizado').checked ? "SI" : "NO",
+                rack_aire_operativo: document.getElementById('rack_aire').checked ? "SI" : "NO",
+                rack_extintor_ok: document.getElementById('rack_extintor').checked ? "SI" : "NO",
+                rack_ups_operativa: document.getElementById('rack_ups').checked ? "SI" : "NO",
+                rack_bitacora_ok: document.getElementById('rack_bitacora').checked ? "SI" : "NO",
+                rack_novedades_observaciones: document.getElementById('rack_observaciones').value.trim(),
+                rack_semaforo: document.getElementById('badge_rack').innerText,
+
+                // Ecosistema Cajas (POS)
+                pos_surepos: document.getElementById('caja_surepos').value,
+                pos_cpu: document.getElementById('caja_cpu').value,
+                pos_escaner: document.getElementById('caja_escaner').value,
+                pos_pistola: document.getElementById('caja_pistola').value,
+                pos_termica: document.getElementById('caja_termica').value,
+                pos_laser: document.getElementById('caja_laser').value,
+                pos_novedades_cajeros: document.getElementById('observaciones_cajeros').value.trim(),
+                pos_semaforo: document.getElementById('badge_cajas').innerText,
+
+                // Dispositivos Móviles
+                movil_tabletas: document.getElementById('estado_tabletas').value,
+                movil_pdas: document.getElementById('estado_pdas').value,
+                movil_pcs_admin: document.getElementById('estado_pcs').value,
+                movil_novedades_hardware: document.getElementById('equipos_observaciones').value.trim(),
+                movil_semaforo: document.getElementById('badge_equipos').innerText,
+
+                // Gestión Humana e Insights
+                encargado_solicitudes_novedades: document.getElementById('notas_encargado').value.trim(),
+                
+                // Firma Digitalizada en formato de texto Base64 largo
+                firma_digital_base64: canvas.toDataURL("image/png")
+            };
+
+            try {
+                if (DATABASE_API_URL.includes("TU_URL_AQUI")) {
+                    // Alerta educativa si aún no configuran la URL
+                    console.log("JSON generado correctamente para Power BI:", payload);
+                    alert("⚠️ ¡Estructura de Datos Lista!\n\nEl sistema capturó perfectamente todas las métricas, novedades y firma. Para guardarlo de verdad, debes configurar la URL de tu API o Power Automate en la línea 241 del código.");
+                } else {
+                    // Envío Real mediante Petición Asíncrona
+                    const response = await fetch(DATABASE_API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        alert("✅ ¡Registro Exitoso!\nLos datos y novedades han sido almacenados en la base de datos centralizada. Ya están listos para reflejarse en Power BI al actualizar el origen.");
+                    } else {
+                        throw new Error("Respuesta no satisfactoria del servidor remoto.");
+                    }
+                }
+            } catch (error) {
+                console.error(error);
+                alert("❌ Error de Conexión: No se pudo transmitir la información a la base de datos centralizada. Verifique la conexión de red o el estado del endpoint.");
+            } finally {
+                // Restauración del Botón
+                btn.disabled = false;
+                btn.className = "w-full bg-indigo-600 active:bg-indigo-800 lg:hover:bg-indigo-700 text-white text-sm font-bold py-3 px-4 rounded transition-all shadow-md flex items-center justify-center gap-2";
+                btn.innerHTML = textoOriginal;
+            }
+        }
+
         function descargarExcel() {
             calcularTodo(); 
-
             const tienda = document.getElementById('tienda').value.trim() || "Tienda no especificada";
             const fecha = document.getElementById('fecha').value || "Sin fecha";
             const hora = document.getElementById('hora').value || "Sin hora";
@@ -580,7 +653,6 @@
 
             const libroTrabajo = XLSX.utils.book_new();
             const hojaResumen = XLSX.utils.aoa_to_sheet(estructuraDatos);
-
             hojaResumen['!cols'] = [{ wch: 35 }, { wch: 30 }];
             XLSX.utils.book_append_sheet(libroTrabajo, hojaResumen, "Estado Semáforo");
 
@@ -611,7 +683,7 @@
             if (estWifi !== "ÓPTIMO") accionesCorrectivas += `<li><b>[RED WI-FI]:</b> Acciones de estabilización inalámbrica estimadas en menos de 24 horas debido a alertas lógicas en la telemetría del canal.</li>`;
             if (estRack !== "ÓPTIMO") accionesCorrectivas += `<li><b>[RACK COMUNICACIONES]:</b> Mitigación preventiva física del gabinete, reordenamiento de cordones ópticos y control ambiental.</li>`;
             if (estCajas !== "ÓPTIMO") accionesCorrectivas += `<li><b>[FRENTE DE CAJAS]:</b> Mantenimiento preventivo en hardware crítico del ecosistema Surepos para asegurar la continuidad transaccional de cobro.</li>`;
-            if (estEquipos !== "ÓPTIMO") accionesCorrectivas += `<li><b>[DISPOSITIVOS MÓVILES]:</b> Depuración lógica de almacenamiento interno y actualización forzada de las aplicaciones core de operation.</li>`;
+            if (estEquipos !== "ÓPTIMO") accionesCorrectivas += `<li><b>[DISPOSITIVOS MÓVILES]:</b> Depuración lógica de almacenamiento interno y actualización forzada de las aplicaciones core de operación.</li>`;
             if (accionesCorrectivas === "") accionesCorrectivas = "<li>No se requieren acciones técnico-correctivas de urgencia. Mantener bitácora preventiva estándar.</li>";
 
             let rackStatus = [];
@@ -656,9 +728,7 @@
             html += `<b>Firma Digital Recibida:</b><br>`;
             html += `<img src="${imagenFirmaB64}" alt="Firma Autorizada" style="border: 1px dashed #cbd5e1; background-color:#f8fafc; max-width:260px; height:auto; margin-top:5px; display:block"/>`;
             html += `</div><br>`;
-            
             html += `<p style="font-size:12px; color:#64748b;">Cordialmente,<br><b>Líder Regional de Soporte</b><br>Área de Teknología</p>`;
-            
             return html;
         }
 
@@ -669,34 +739,12 @@
             const estado = document.getElementById('semaforo_texto').innerText;
             const nombreFirmante = document.getElementById('nombre_firma').value.trim() || "[Nombre del Encargado]";
 
-            let ppt = `ESTRUCTURA DE LA PRESENTACIÓN (DIAPOSITIVAS CORPORATIVAS)\n`;
-            ppt += `Para copiar y pegar en PowerPoint / Google Slides:\n\n`;
-            ppt += `------------------------------------------------------\n`;
-            ppt += `DIAPOSITIVA 1: Portada\n`;
-            ppt += `- Título: Informe de Inspección Tecnológica de Tienda\n`;
-            ppt += `- Punto de Venta: ${tienda}\n`;
-            ppt += `- Fecha de Evaluación: ${fecha} (Hora: ${hora})\n`;
-            ppt += `- Responsable: Líder Regional de Soporte\n`;
-            ppt += `------------------------------------------------------\n`;
-            ppt += `DIAPOSITIVA 2: Diagnóstico General (Dashboard Semáforo)\n`;
-            ppt += `- Estado de Salud del Punto: [ ${estado} ]\n`;
-            ppt += `- Resumen Ejecutivo: Conectividad, frente de cajas (POS), infraestructura en rack y dispositivos móviles.\n`;
-            ppt += `------------------------------------------------------\n`;
-            ppt += `DIAPOSITIVA 3: Estado del Frente de Cajas (POS)\n`;
-            ppt += `- Estatus de Salud Frente Cajas: ${document.getElementById('badge_cajas').innerText}\n`;
-            ppt += `- Voz del Usuario (Cajeros): "${document.getElementById('observaciones_cajeros').value.trim() || 'Sin novedades operativas'}"\n`;
-            ppt += `------------------------------------------------------\n`;
-            ppt += `DIAPOSITIVA 4: Infraestructura Física (Rack de Datos)\n`;
-            ppt += `- Estatus de Salud del Rack: ${document.getElementById('badge_rack').innerText}\n`;
-            ppt += `- Observaciones técnicas detectadas: "${document.getElementById('rack_observaciones').value.trim() || 'Infraestructura física estable'}"\n`;
-            ppt += `------------------------------------------------------\n`;
-            ppt += `DIAPOSITIVA 5: Equipamiento Administrativo y Dispositivos Móviles\n`;
-            ppt += `- Estatus de Salud de Hardware: ${document.getElementById('badge_equipos').innerText}\n`;
-            ppt += `- Hallazgos en parque tecnológico: "${document.getElementById('equipos_observaciones').value.trim() || 'Dispositivos operando bajo la norma lógicas'}"\n`;
-            ppt += `------------------------------------------------------\n`;
-            ppt += `DIAPOSITIVA 6: Plan de Acción, Conformidad y ANS (SLA)\n`;
-            ppt += `- Soluciones priorizadas por criticidad de cara a la Gerencia de Tecnología.\n`;
-            ppt += `- Validación en Sitio: Conformidad firmada digitalmente por el encargado ${nombreFirmante}.`;
+            let ppt = `ESTRUCTURA DE LA PRESENTACIÓN (DIAPOSITIVAS CORPORATIVAS)\n\n`;
+            ppt += `DIAPOSITIVA 1: Portada\n- Título: Informe de Inspección Tecnológica de Tienda\n- Punto de Venta: ${tienda}\n- Fecha de Evaluación: ${fecha} (Hora: ${hora})\n\n`;
+            ppt += `DIAPOSITIVA 2: Dashboard Semáforo General\n- Estado de Salud del Punto: [ ${estado} ]\n- Novedades Críticas Consolidadas.\n\n`;
+            ppt += `DIAPOSITIVA 3: Estado de Cajas (POS)\n- Semáforo: ${document.getElementById('badge_cajas').innerText}\n- Voz del Usuario: "${document.getElementById('observaciones_cajeros').value.trim() || 'Sin novedades'}"\n\n`;
+            ppt += `DIAPOSITIVA 4: Infraestructura Física (Rack)\n- Semáforo: ${document.getElementById('badge_rack').innerText}\n- Hallazgos Físicos: "${document.getElementById('rack_observaciones').value.trim() || 'Estable'}"\n\n`;
+            ppt += `DIAPOSITIVA 5: Plan de Acción y Cierre\n- Cierre de conformidad firmado por el encargado ${nombreFirmante}.`;
             return ppt;
         }
 
@@ -718,7 +766,6 @@
                 textoArea.classList.remove('hidden'); 
                 textoArea.value = generarTextoPPT();
             }
-
             modal.classList.remove('hidden');
             modal.classList.add('flex');
         }
@@ -732,33 +779,19 @@
         async function copiarContenido() {
             const htmlPreview = document.getElementById('modal_preview_html');
             const textoArea = document.getElementById('modal_texto');
-            
             if (!htmlPreview.classList.contains('hidden')) {
                 try {
                     const blobHtml = new Blob([htmlPreview.innerHTML], { type: 'text/html' });
                     const blobText = new Blob([htmlPreview.innerText], { type: 'text/plain' });
-                    const datosCopiado = [new ClipboardItem({ 'text/html': blobHtml, 'text/plain': blobText })];
-                    
-                    await navigator.clipboard.write(datosCopiado);
-                    alert('¡Correo copiado con éxito! Ya puedes abrir tu gestor de correo y pegarlo directamente (Ctrl+V); la estructura y la firma aparecerán visualmente.');
+                    await navigator.clipboard.write([new ClipboardItem({ 'text/html': blobHtml, 'text/plain': blobText })]);
+                    alert('¡Correo copiado con éxito!');
                 } catch (err) {
-                    const range = document.createRange();
-                    range.selectNode(htmlPreview);
-                    window.getSelection().removeAllRanges();
-                    window.getSelection().addRange(range);
-                    document.execCommand('copy');
-                    window.getSelection().removeAllRanges();
-                    alert('¡Contenido seleccionado y copiado al portapapeles!');
+                    alert('Error al copiar contenido enriquecido de forma automática.');
                 }
             } else {
-                try {
-                    await navigator.clipboard.writeText(textoArea.value);
-                    alert('¡Estructura PPT copiada al portapapeles con éxito!');
-                } catch (err) {
-                    textoArea.select();
-                    document.execCommand('copy');
-                    alert('¡Contenido copiado!');
-                }
+                textoArea.select();
+                document.execCommand('copy');
+                alert('¡Contenido copiado!');
             }
         }
     </script>
