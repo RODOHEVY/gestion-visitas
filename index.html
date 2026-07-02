@@ -507,7 +507,7 @@
         }
 
         // ==========================================
-        // LÓGICA DE ENVÍO REESTRUCTURADA (18 VARIABLES)
+        // LÓGICA DE ENVÍO CORREGIDA PARA GOOGLE SHEETS
         // ==========================================
         async function guardarEnBD() {
             calcularTodo();
@@ -526,33 +526,22 @@
             btn.disabled = true;
             btn.innerText = "⏳ Guardando en Google Sheets...";
 
-            // Extraer el trazo del lienzo como string de imagen en Base64
-            const firmaBase64 = canvas.toDataURL("image/png");
-
-            // OBJETO CON LAS LLAVES EXACTAS EXIGIDAS POR TU RESTRUCTURACIÓN DE COLUMNAS
+            // Empaquetamos la información con las llaves exactas del Apps Script
             const payload = {
-                ID_Registro: "REG-" + Date.now(),
-                Tienda: tienda,
-                Fecha: fecha,
-                Hora: hora,
-                Inspector_IT: "Soporte IT",
-                Estado_Global: document.getElementById('semaforo_texto').innerText,
-                Novedades_WiFi: document.getElementById('wifi_cobertura').value.trim() || 'Sin novedades',
-                Velocidad_Bajada_Mbps: document.getElementById('wifi_descarga').value || '0',
-                Velocidad_Subida_Mbps: document.getElementById('wifi_carga').value || '0',
-                Estado_Rack: document.getElementById('badge_rack').innerText,
-                Novedades_Rack: document.getElementById('rack_observaciones').value.trim() || 'Sin observaciones',
-                Estado_Cajas: document.getElementById('badge_cajas').innerText,
-                Novedades_Cajas: document.getElementById('observaciones_cajeros').value.trim() || 'Sin novedades',
-                Estado_Equipos: document.getElementById('badge_equipos').innerText,
-                Novedades_Equipos: document.getElementById('equipos_observaciones').value.trim() || 'Sin novedades',
-                Notas_Encargado: document.getElementById('notas_encargado').value.trim() || 'Sin notas',
-                Firmante_Tienda: nombreFirma,
-                Evidencia_Firma: firmaBase64
+                tienda: tienda,
+                fecha: fecha,
+                hora: hora,
+                nombre_firmante: nombreFirma,
+                estado_global: document.getElementById('semaforo_texto').innerText,
+                wifi_novedades_cobertura: document.getElementById('wifi_cobertura').value.trim() || 'Sin novedades',
+                rack_novedades_observaciones: document.getElementById('rack_observaciones').value.trim() || 'Sin observaciones',
+                pos_novedades_cajeros: document.getElementById('observaciones_cajeros').value.trim() || 'Sin novedades',
+                movil_novedades_hardware: document.getElementById('equipos_observaciones').value.trim() || 'Sin novedades',
+                encargado_solicitudes_novedades: document.getElementById('notas_encargado').value.trim() || 'Sin notas'
             };
 
             try {
-                // Envío optimizado mediante POST (Con modo no-cors activo para infraestructura estática)
+                // Petición HTTP POST optimizada para Google Sheets (no-cors activa)
                 await fetch(DATABASE_API_URL, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -561,6 +550,7 @@
                     body: JSON.stringify(payload)
                 });
 
+                // Al usar 'no-cors', asumimos éxito si la promesa se cumple
                 alert("✅ ¡Registro Exitoso! Tus datos y novedades han sido almacenados en Google Sheets de manera segura.");
                 
             } catch (error) {
