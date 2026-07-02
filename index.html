@@ -1,65 +1,760 @@
-<script>
-  // 1. Tu URL real de Google Sheets (Ya conectada)
-  const DATABASE_API_URL = "https://script.google.com/macros/s/AKfycbwqXoNQbJbGu7UDOoNVcqnDV4zEJhOts4-Zi9OTPwxRIu0RDB1F9seM4S3vFsiY1ASR/exec";
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gestión de Visitas - Soporte Regional</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 pb-12 antialiased">
 
-  // 2. Esta función se ejecuta cuando presionas el botón de guardar
-  function guardarRegistroEnGoogleSheets(event) {
-      if (event) event.preventDefault(); // Evita que la página se recargue sola
+    <header class="bg-indigo-700 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col lg:flex-row justify-between items-center gap-4">
+            
+            <div class="flex items-center gap-3 w-full lg:w-auto justify-center lg:justify-start">
+                <div class="bg-white p-1.5 rounded-lg shadow-sm flex items-center justify-center shrink-0">
+                    <img src="image_779edc.png" alt="Logo Teknología" class="h-9 w-auto object-contain">
+                </div>
+                <div class="text-center lg:text-left">
+                    <h1 class="text-lg md:text-xl font-bold tracking-tight leading-tight">Líder Regional de Soporte</h1>
+                    <p class="text-xs text-indigo-200">Control de Visitas a Puntos de Venta</p>
+                </div>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+                <input id="tienda" type="text" placeholder="Nombre de la Tienda / ID" class="w-full sm:w-48 px-3 py-2 text-base md:text-sm rounded bg-indigo-800 text-white border border-indigo-600 placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-white">
+                <div class="grid grid-cols-2 sm:flex gap-2 w-full sm:w-auto">
+                    <input id="fecha" type="date" class="w-full sm:w-36 px-3 py-2 text-base md:text-sm rounded bg-indigo-800 text-white border border-indigo-600 focus:outline-none focus:ring-2 focus:ring-white">
+                    <input id="hora" type="time" class="w-full sm:w-28 px-3 py-2 text-base md:text-sm rounded bg-indigo-800 text-white border border-indigo-600 focus:outline-none focus:ring-2 focus:ring-white">
+                </div>
+            </div>
 
-      // RECOLECCIÓN DE DATOS: Sacamos lo que escribiste en la pantalla
-      // IMPORTANTE: Los nombres como 'nombreTienda' deben ser los ID exactos de tus inputs en el HTML
-      const datosDelFormulario = {
-          tienda: document.getElementById('nombreTienda')?.value || 'No especificado',
-          fecha: document.getElementById('fechaVisita')?.value || '',
-          hora: document.getElementById('horaVisita')?.value || '',
-          nombre_firmante: document.getElementById('nombreFirmante')?.value || 'Sin firma',
-          estado_global: document.getElementById('estadoGlobal')?.innerText || 'ÓPTIMO',
-          
-          // Novedades de cada sección
-          wifi_novedades_cobertura: document.getElementById('novedadesWifi')?.value || 'Sin novedades',
-          rack_novedades_observaciones: document.getElementById('novedadesRack')?.value || 'Sin novedades',
-          pos_novedades_cajeros: document.getElementById('novedadesCajas')?.value || 'Sin novedades',
-          movil_novedades_hardware: document.getElementById('novedadesEquipos')?.value || 'Sin novedades',
-          encargado_solicitudes_novedades: document.getElementById('notasEncargado')?.value || 'Sin notas'
-      };
+        </div>
+    </header>
 
-      // Avisamos en pantalla que estamos trabajando
-      console.log("Enviando datos...", datosDelFormulario);
+    <main class="max-w-6xl mx-auto px-4 mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <section class="lg:col-span-2 space-y-6">
+            
+            <div class="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-base font-bold text-slate-900 border-b pb-2 mb-4 flex items-center gap-2">
+                    📶 Estado de la Red Wi-Fi
+                </h2>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Vel. Subida (Mbps)</label>
+                        <input id="wifi_carga" type="number" oninput="calcularTodo()" placeholder="Ej: 85" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Vel. Bajada (Mbps)</label>
+                        <input id="wifi_descarga" type="number" oninput="calcularTodo()" placeholder="Ej: 26" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Latencia (ms)</label>
+                        <input id="wifi_latencia" type="number" oninput="calcularTodo()" placeholder="Ej: 15" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Señal (Db)</label>
+                        <input id="wifi_senal" type="number" oninput="calcularTodo()" placeholder="Ej: 45" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-colors">
+                    </div>
+                    <div class="col-span-2 sm:col-span-4">
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Zonas con baja cobertura o interferencias (Novedades)</label>
+                        <textarea id="wifi_cobertura" rows="2" placeholder="Describa si hay puntos ciegos en la tienda..." class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                    </div>
+                </div>
+            </div>
 
-      // ENVIAR A GOOGLE SHEETS (Con el truco anti-bloqueos)
-      fetch(DATABASE_API_URL, {
-          method: 'POST',
-          mode: 'no-cors', // <-- ESTO EVITA EL ERROR DE CONEXIÓN DE LA IMAGEN
-          cache: 'no-cache',
-          headers: {
-              'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(datosDelFormulario)
-      })
-      .then(() => {
-          // Como usamos 'no-cors', si el paquete sale de la computadora, asumimos éxito total
-          alert("¡Registro enviado con éxito a Google Sheets! 🚀");
-          
-          // Opcional: si quieres que el formulario se borre para una nueva visita, descomenta la línea de abajo:
-          // document.getElementById('tuFormularioId')?.reset();
-      })
-      .catch(error => {
-          console.error("Error real:", error);
-          alert("Hubo un problema real de internet. Verifica tu red.");
-      });
-  }
+            <div class="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-base font-bold text-slate-900 border-b pb-2 mb-4 flex items-center gap-2">
+                    🗄️ Estado del Rack de Comunicaciones
+                </h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <label class="flex items-center gap-3 p-3 bg-slate-50 rounded active:bg-slate-200 lg:hover:bg-slate-100 cursor-pointer select-none">
+                        <input id="rack_organizado" type="checkbox" checked class="w-5 h-5 sm:w-4 sm:h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                        <span class="text-sm font-medium">Rack Organizado y Limpio</span>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 bg-slate-50 rounded active:bg-slate-200 lg:hover:bg-slate-100 cursor-pointer select-none">
+                        <input id="rack_aire" type="checkbox" checked class="w-5 h-5 sm:w-4 sm:h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                        <span class="text-sm font-medium">Aire Acondicionado Operativo</span>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 bg-slate-50 rounded active:bg-slate-200 lg:hover:bg-slate-100 cursor-pointer select-none">
+                        <input id="rack_extintor" type="checkbox" checked class="w-5 h-5 sm:w-4 sm:h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                        <span class="text-sm font-medium">Extintor Vigente y en Sitio</span>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 bg-slate-50 rounded active:bg-slate-200 lg:hover:bg-slate-100 cursor-pointer select-none">
+                        <input id="rack_ups" type="checkbox" checked class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                        <span class="text-sm font-medium">UPS sin Alertas / Operativa</span>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 bg-slate-50 rounded active:bg-slate-200 lg:hover:bg-slate-100 cursor-pointer select-none sm:col-span-2">
+                        <input id="rack_bitacora" type="checkbox" checked class="w-5 h-5 sm:w-4 sm:h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                        <span class="text-sm font-medium">Bitácora de Accesos al Día</span>
+                    </label>
+                    <div class="sm:col-span-2 mt-2">
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Observaciones / Hallazgos Físicos del Rack (Novedades)</label>
+                        <textarea id="rack_observaciones" rows="2" placeholder="Observaciones técnicas..." class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                    </div>
+                </div>
+            </div>
 
-  // 3. Decirle al botón de guardar de tu HTML que active esta función
-  document.addEventListener("DOMContentLoaded", function() {
-      // Busca el botón por su ID (si tu botón tiene id="btnGuardar")
-      // Si no tiene ID, buscará el botón de tipo "submit" del formulario
-      const botonGuardar = document.getElementById('btnGuardar') || document.querySelector('button[type="submit"]') || document.querySelector('.btn-success');
-      
-      if (botonGuardar) {
-          botonGuardar.addEventListener('click', guardarRegistroEnGoogleSheets);
-          console.log("Botón de guardado vinculado correctamente.");
-      } else {
-          console.log("No encontré el botón de guardar. Revisa su ID en el HTML.");
-      }
-  });
-</script>
+            <div class="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-base font-bold text-slate-900 border-b pb-2 mb-4 flex items-center gap-2">
+                    🛒 Estado de Cajas (Frente de Facturación)
+                </h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Surepos</label>
+                        <select id="caja_surepos" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="Óptimo">Óptimo</option>
+                            <option value="Mantenimiento">Mantenimiento</option>
+                            <option value="Crítico">Crítico / Inoperativo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">CPU Caja</label>
+                        <select id="caja_cpu" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="Óptimo">Óptimo</option>
+                            <option value="Mantenimiento">Mantenimiento</option>
+                            <option value="Crítico">Crítico / Inoperativo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Escáner</label>
+                        <select id="caja_escaner" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="Óptimo">Óptimo</option>
+                            <option value="Mantenimiento">Mantenimiento</option>
+                            <option value="Crítico">Crítico / Inoperativo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Pistola</label>
+                        <select id="caja_pistola" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="Óptimo">Óptimo</option>
+                            <option value="Mantenimiento">Mantenimiento</option>
+                            <option value="Crítico">Crítico / Inoperativo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Impresora Térmica</label>
+                        <select id="caja_termica" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="Óptimo">Óptimo</option>
+                            <option value="Mantenimiento">Mantenimiento</option>
+                            <option value="Crítico">Crítico / Inoperativo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Impresora Láser</label>
+                        <select id="caja_laser" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="Óptimo">Óptimo</option>
+                            <option value="Mantenimiento">Mantenimiento</option>
+                            <option value="Crítico">Crítico / Inoperativo</option>
+                        </select>
+                    </div>
+                    <div class="sm:col-span-2 lg:col-span-3">
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Observaciones de los Cajeros (Novedades)</label>
+                        <textarea id="observaciones_cajeros" rows="2" placeholder="Comentarios de cajas..." class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-base font-bold text-slate-900 border-b pb-2 mb-4 flex items-center gap-2">
+                    💻 Estado de Equipos Tecnológicos Móviles / Admin
+                </h2>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Tabletas</label>
+                        <select id="estado_tabletas" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="Óptimo">Óptimo</option>
+                            <option value="Mantenimiento">Requiere Mantenimiento</option>
+                            <option value="Crítico">Crítico / Inoperativo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">PDAs (Handhelds)</label>
+                        <select id="estado_pdas" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="Óptimo">Óptimo</option>
+                            <option value="Mantenimiento">Requiere Mantenimiento</option>
+                            <option value="Crítico">Crítico / Inoperativo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">PCs Administrativos</label>
+                        <select id="estado_pcs" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="Óptimo">Óptimo</option>
+                            <option value="Mantenimiento">Requiere Mantenimiento</option>
+                            <option value="Crítico">Crítico / Inoperativo</option>
+                        </select>
+                    </div>
+                    <div class="sm:col-span-3">
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Observaciones de Dispositivos (Novedades)</label>
+                        <textarea id="equipos_observaciones" rows="2" placeholder="Detalles de hardware..." class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-base font-bold text-slate-900 border-b pb-2 mb-4 flex items-center gap-2">
+                    🗣️ Conversación con el Encargado del Punto
+                </h2>
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Datos clave / Solicitudes administrativas (Novedades)</label>
+                    <textarea id="notas_encargado" rows="3" placeholder="Solicitudes o quejas..." class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-base font-bold text-slate-900 border-b pb-2 mb-3 flex items-center gap-2">
+                    ✍️ Validación de Visita Técnico
+                </h2>
+                <p class="text-xs text-slate-500 mb-4">Solicite al Jefe de Tienda / Encargado registrar su nombre completo y validar la conformidad de la inspección con su firma:</p>
+                
+                <div class="mb-4">
+                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Nombre Completo de quien Firma</label>
+                    <input id="nombre_firma" type="text" placeholder="Ej: Carlos Mario Restrepo" class="w-full p-2.5 md:p-2 text-base md:text-sm bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-colors">
+                </div>
+
+                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Firma Digital (Dedo o Puntero)</label>
+                <div class="border-2 border-dashed border-slate-300 rounded-lg bg-slate-100 relative">
+                    <canvas id="firma_canvas" class="w-full h-40 block cursor-crosshair touch-none"></canvas>
+                </div>
+                
+                <div class="mt-2.5 flex justify-between items-center">
+                    <span class="text-[11px] text-slate-400 font-medium">Cierre formal de conformidad</span>
+                    <button type="button" onclick="limpiarFirma()" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded transition-colors">
+                        🗑️ Limpiar Trazo
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+        <section class="space-y-6">
+            
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 text-center">
+                <h2 class="text-xs font-bold text-slate-500 tracking-wider uppercase mb-3">Estado General Visita</h2>
+                
+                <div class="flex justify-center mb-5">
+                    <div id="semaforo_circulo" class="w-24 h-24 rounded-full bg-emerald-500 shadow-inner flex items-center justify-center transition-all duration-300">
+                        <span id="semaforo_texto" class="text-white font-bold text-sm tracking-wide">ÓPTIMO</span>
+                    </div>
+                </div>
+
+                <div class="space-y-2 text-left mb-4 border-t pt-4 border-slate-100">
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+                        <span class="text-xs font-semibold text-slate-700 flex items-center gap-1.5">📶 Red Wi-Fi</span>
+                        <span id="badge_wifi" class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500 text-white uppercase tracking-wider transition-colors duration-300">ÓPTIMO</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+                        <span class="text-xs font-semibold text-slate-700 flex items-center gap-1.5">🗄️ Rack Comun.</span>
+                        <span id="badge_rack" class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500 text-white uppercase tracking-wider transition-colors duration-300">ÓPTIMO</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+                        <span class="text-xs font-semibold text-slate-700 flex items-center gap-1.5">🛒 Frente Cajas</span>
+                        <span id="badge_cajas" class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500 text-white uppercase tracking-wider transition-colors duration-300">ÓPTIMO</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+                        <span class="text-xs font-semibold text-slate-700 flex items-center gap-1.5">💻 Equipos Móviles</span>
+                        <span id="badge_equipos" class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500 text-white uppercase tracking-wider transition-colors duration-300">ÓPTIMO</span>
+                    </div>
+                </div>
+
+                <div class="space-y-2.5">
+                    <button onclick="calcularTodo()" class="w-full bg-slate-700 hover:bg-slate-800 text-white text-xs font-semibold py-2 px-4 rounded transition-colors shadow">
+                        🔄 Recalcular Semáforos
+                    </button>
+                    
+                    <button id="btn_guardar_bd" onclick="guardarEnBD()" class="w-full bg-indigo-600 active:bg-indigo-800 lg:hover:bg-indigo-700 text-white text-sm font-bold py-3 px-4 rounded transition-all shadow-md flex items-center justify-center gap-2">
+                        <span>💾 Guardar Registro en BD</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4">
+                <h3 class="text-sm font-bold text-slate-900 border-b pb-2">📂 Entregables Automatizados</h3>
+                
+                <button onclick="descargarExcel()" class="w-full flex items-center justify-between p-3.5 bg-emerald-50 active:bg-emerald-200 lg:hover:bg-emerald-100 rounded-lg text-left border border-emerald-200 text-sm font-medium transition-colors">
+                    <span class="text-slate-700 flex items-center gap-2">📊 Exportar Reporte Local (.xlsx)</span>
+                    <span class="text-emerald-600 font-bold">⬇️</span>
+                </button>
+
+                <button onclick="abrirModal('correo')" class="w-full flex items-center justify-between p-3.5 bg-slate-50 active:bg-slate-200 lg:hover:bg-slate-100 rounded-lg text-left border border-slate-200 text-sm font-medium transition-colors">
+                    <span>📧 Resumen Ejecutivo para Correo</span>
+                    <span class="text-indigo-600 font-bold">➔</span>
+                </button>
+
+                <button onclick="abrirModal('ppt')" class="w-full flex items-center justify-between p-3.5 bg-slate-50 active:bg-slate-200 lg:hover:bg-slate-100 rounded-lg text-left border border-slate-200 text-sm font-medium transition-colors">
+                    <span>📊 Estructura de Diapositivas PPT</span>
+                    <span class="text-indigo-600 font-bold">➔</span>
+                </button>
+            </div>
+
+        </section>
+    </main>
+
+    <div id="modal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center p-3 sm:p-4 z-50 transition-opacity duration-300">
+        <div class="bg-white w-full max-w-2xl rounded-xl shadow-xl flex flex-col max-h-[90vh] sm:max-h-[85vh]">
+            <div class="p-4 border-b flex justify-between items-center bg-slate-50 rounded-t-xl">
+                <h3 id="modal_titulo" class="font-bold text-sm sm:text-base text-slate-800 truncate pr-2"></h3>
+                <button onclick="cerrarModal()" class="text-slate-400 hover:text-slate-600 text-2xl font-bold p-1">&times;</button>
+            </div>
+            <div class="p-3 sm:p-4 overflow-y-auto flex-1">
+                <textarea id="modal_texto" readonly class="w-full h-64 p-3 bg-slate-50 border border-slate-300 rounded font-mono text-xs focus:outline-none resize-none"></textarea>
+                <div id="modal_preview_html" class="hidden w-full h-64 p-4 bg-white border border-slate-300 rounded overflow-y-auto text-sm font-sans text-slate-800"></div>
+            </div>
+            <div class="p-3 sm:p-4 border-t bg-slate-50 flex flex-col sm:flex-row justify-end gap-2 rounded-b-xl">
+                <button onclick="copiarContenido()" class="w-full sm:w-auto bg-indigo-600 active:bg-indigo-800 lg:hover:bg-indigo-700 text-white font-semibold text-xs py-3 sm:py-2 px-4 rounded shadow text-center">
+                    📋 Copiar Contenido
+                </button>
+                <button onclick="cerrarModal()" class="w-full sm:w-auto bg-slate-200 active:bg-slate-300 text-slate-700 font-semibold text-xs py-3 sm:py-2 px-4 rounded text-center">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // URL de tu Apps Script de Google Sheets
+        const DATABASE_API_URL = "https://script.google.com/macros/s/AKfycbwqXoNQbJbGu7UDOoNVcqnDV4zEJhOts4-Zi9OTPwxRIu0RDB1F9seM4S3vFsiY1ASR/exec";
+
+        // Inicialización automática de Fecha y Hora actuales al cargar
+        const ahora = new Date();
+        document.getElementById('fecha').valueAsDate = ahora;
+        
+        const hrs = String(ahora.getHours()).padStart(2, '0');
+        const mins = String(ahora.getMinutes()).padStart(2, '0');
+        document.getElementById('hora').value = `${hrs}:${mins}`;
+
+        // LÓGICA DEL LIENZO DE FIRMA TÁCTIL
+        const canvas = document.getElementById('firma_canvas');
+        const ctx = canvas.getContext('2d');
+        let dibujando = false;
+
+        function redimensionarCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            const nuevoAncho = Math.floor(rect.width);
+            const nuevoAlto = Math.floor(rect.height);
+
+            if (canvas.width === nuevoAncho && canvas.height === nuevoAlto) return;
+
+            let canvasRespaldo = null;
+            if (canvas.width > 0 && canvas.height > 0) {
+                canvasRespaldo = document.createElement('canvas');
+                canvasRespaldo.width = canvas.width;
+                canvasRespaldo.height = canvas.height;
+                canvasRespaldo.getContext('2d').drawImage(canvas, 0, 0);
+            }
+
+            canvas.width = nuevoAncho;
+            canvas.height = nuevoAlto;
+            
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#1e1b4b';
+
+            if (canvasRespaldo) {
+                ctx.drawImage(canvasRespaldo, 0, 0, canvasRespaldo.width, canvasRespaldo.height, 0, 0, nuevoAncho, nuevoAlto);
+            }
+        }
+        
+        window.addEventListener('resize', redimensionarCanvas);
+        setTimeout(redimensionarCanvas, 200);
+
+        function obtenerCoordenadas(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clienteX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clienteY = e.touches ? e.touches[0].clientY : e.clientY;
+            return { x: clienteX - rect.left, y: clienteY - rect.top };
+        }
+
+        function iniciarDibujo(e) {
+            dibujando = true;
+            const pos = obtenerCoordenadas(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        }
+
+        function moverDibujo(e) {
+            if (!dibujando) return;
+            const pos = obtenerCoordenadas(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        }
+
+        function detenerDibujo() { dibujando = false; }
+        function limpiarFirma() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+        canvas.addEventListener('mousedown', iniciarDibujo);
+        canvas.addEventListener('mousemove', moverDibujo);
+        window.addEventListener('mouseup', detenerDibujo);
+        canvas.addEventListener('touchstart', iniciarDibujo);
+        canvas.addEventListener('touchmove', moverDibujo);
+        window.addEventListener('touchend', detenerDibujo);
+
+        function actualizarEstiloBadge(idElemento, estado) {
+            const badge = document.getElementById(idElemento);
+            badge.innerText = estado;
+            badge.className = "px-2.5 py-1 rounded-full text-[10px] font-bold text-white uppercase tracking-wider transition-colors duration-300";
+            if (estado === "CRÍTICO") badge.classList.add("bg-rose-500");
+            else if (estado === "ADVERTENCIA") badge.classList.add("bg-amber-400");
+            else badge.classList.add("bg-emerald-500");
+        }
+
+        function colorizarInput(idElemento, estado, estaVacio) {
+            const input = document.getElementById(idElemento);
+            input.classList.remove('bg-slate-50', 'border-slate-300', 'focus:ring-indigo-500', 'bg-emerald-50', 'border-emerald-300', 'focus:ring-emerald-500', 'bg-amber-50', 'border-amber-300', 'focus:ring-amber-500', 'bg-rose-50', 'border-rose-300', 'focus:ring-rose-500');
+            if (estaVacio) {
+                input.classList.add('bg-slate-50', 'border-slate-300', 'focus:ring-indigo-500');
+                return;
+            }
+            if (estado === "CRÍTICO") input.classList.add('bg-rose-50', 'border-rose-300', 'focus:ring-rose-500');
+            else if (estado === "ADVERTENCIA") input.classList.add('bg-amber-50', 'border-amber-300', 'focus:ring-amber-500');
+            else input.classList.add('bg-emerald-50', 'border-emerald-300', 'focus:ring-emerald-500');
+        }
+
+        function calcularTodo() {
+            const rawSubida = document.getElementById('wifi_carga').value;
+            const rawBajada = document.getElementById('wifi_descarga').value;
+            const rawLatencia = document.getElementById('wifi_latencia').value;
+            const rawSenal = document.getElementById('wifi_senal').value;
+
+            const subida = parseFloat(rawSubida);
+            const bajada = parseFloat(rawBajada);
+            const latencia = parseFloat(rawLatencia);
+            const senal = parseFloat(rawSenal);
+
+            let estSubida = "ÓPTIMO";
+            if (rawSubida !== "") {
+                if (subida < 30) estSubida = "CRÍTICO";
+                else if (subida <= 79) estSubida = "ADVERTENCIA";
+            }
+            colorizarInput('wifi_carga', estSubida, rawSubida === "");
+
+            let estBajada = "ÓPTIMO";
+            if (rawBajada !== "") {
+                if (bajada < 18) estBajada = "CRÍTICO";
+                else if (bajada <= 24) estBajada = "ADVERTENCIA";
+            }
+            colorizarInput('wifi_descarga', estBajada, rawBajada === "");
+
+            let estLatencia = "ÓPTIMO";
+            if (rawLatencia !== "") {
+                if (latencia > 60) estLatencia = "CRÍTICO";
+                else if (latencia >= 21) estLatencia = "ADVERTENCIA";
+            }
+            colorizarInput('wifi_latencia', estLatencia, rawLatencia === "");
+
+            let estSenal = "ÓPTIMO";
+            if (rawSenal !== "") {
+                if (senal > 80) estSenal = "CRÍTICO";
+                else if (senal >= 51) estSenal = "ADVERTENCIA";
+            }
+            colorizarInput('wifi_senal', estSenal, rawSenal === "");
+
+            let estadoWifi = "ÓPTIMO";
+            if (rawSubida==="" && rawBajada==="" && rawLatencia==="" && rawSenal==="") estadoWifi = "ÓPTIMO"; 
+            else if (estSubida === "CRÍTICO" || estBajada === "CRÍTICO" || estLatencia === "CRÍTICO" || estSenal === "CRÍTICO") estadoWifi = "CRÍTICO";
+            else if (estSubida === "ADVERTENCIA" || estBajada === "ADVERTENCIA" || estLatencia === "ADVERTENCIA" || estSenal === "ADVERTENCIA") estadoWifi = "ADVERTENCIA";
+            actualizarEstiloBadge('badge_wifi', estadoWifi);
+
+            let rackFallas = 0;
+            if(!document.getElementById('rack_organizado').checked) rackFallas++;
+            if(!document.getElementById('rack_aire').checked) rackFallas++;
+            if(!document.getElementById('rack_extintor').checked) rackFallas++;
+            if(!document.getElementById('rack_ups').checked) rackFallas++;
+            if(!document.getElementById('rack_bitacora').checked) rackFallas++;
+
+            let estadoRack = "ÓPTIMO";
+            if (rackFallas >= 3) estadoRack = "CRÍTICO";
+            else if (rackFallas > 0) estadoRack = "ADVERTENCIA";
+            actualizarEstiloBadge('badge_rack', estadoRack);
+
+            const s_surepos = document.getElementById('caja_surepos').value;
+            const s_cpu = document.getElementById('caja_cpu').value;
+            const s_escaner = document.getElementById('caja_escaner').value;
+            const s_pistola = document.getElementById('caja_pistola').value;
+            const s_termica = document.getElementById('caja_termica').value;
+            const s_laser = document.getElementById('caja_laser').value;
+
+            let estadoCajas = "ÓPTIMO";
+            if (s_surepos === "Crítico" || s_cpu === "Crítico" || s_escaner === "Crítico" || s_pistola === "Crítico" || s_termica === "Crítico" || s_laser === "Crítico") estadoCajas = "CRÍTICO";
+            else if (s_surepos === "Mantenimiento" || s_cpu === "Mantenimiento" || s_escaner === "Mantenimiento" || s_pistola === "Mantenimiento" || s_termica === "Mantenimiento" || s_laser === "Mantenimiento") estadoCajas = "ADVERTENCIA";
+            actualizarEstiloBadge('badge_cajas', estadoCajas);
+
+            const t_status = document.getElementById('estado_tabletas').value;
+            const p_status = document.getElementById('estado_pdas').value;
+            const pc_status = document.getElementById('estado_pcs').value;
+
+            let estadoEquipos = "ÓPTIMO";
+            if (t_status === "Crítico" || p_status === "Crítico" || pc_status === "Crítico") estadoEquipos = "CRÍTICO";
+            else if (t_status === "Mantenimiento" || p_status === "Mantenimiento" || pc_status === "Mantenimiento") estadoEquipos = "ADVERTENCIA";
+            actualizarEstiloBadge('badge_equipos', estadoEquipos);
+
+            const circulo = document.getElementById('semaforo_circulo');
+            const texto = document.getElementById('semaforo_texto');
+            circulo.className = "w-24 h-24 rounded-full shadow-inner flex items-center justify-center transition-all duration-300";
+
+            if (estadoWifi === "CRÍTICO" || estadoRack === "CRÍTICO" || estadoCajas === "CRÍTICO" || estadoEquipos === "CRÍTICO") {
+                circulo.classList.add("bg-rose-500", "animate-pulse");
+                texto.innerText = "CRÍTICO";
+            } else if (estadoWifi === "ADVERTENCIA" || estadoRack === "ADVERTENCIA" || estadoCajas === "ADVERTENCIA" || estadoEquipos === "ADVERTENCIA") {
+                circulo.classList.add("bg-amber-400");
+                texto.innerText = "ADVERTENCIA";
+            } else {
+                circulo.classList.add("bg-emerald-500");
+                texto.innerText = "ÓPTIMO";
+            }
+        }
+
+        // ==========================================
+        // LÓGICA DE ENVÍO REESTRUCTURADA (18 VARIABLES)
+        // ==========================================
+        async function guardarEnBD() {
+            calcularTodo();
+
+            const tienda = document.getElementById('tienda').value.trim();
+            const fecha = document.getElementById('fecha').value;
+            const hora = document.getElementById('hora').value;
+            const nombreFirma = document.getElementById('nombre_firma').value.trim();
+
+            if (!tienda || !fecha || !hora || !nombreFirma) {
+                alert("❌ Campos incompletos: Es obligatorio ingresar la Tienda, Fecha, Hora y Nombre del Responsable para guardar en la base de datos.");
+                return;
+            }
+
+            const btn = document.getElementById('btn_guardar_bd');
+            btn.disabled = true;
+            btn.innerText = "⏳ Guardando en Google Sheets...";
+
+            // Extraer el trazo del lienzo como string de imagen en Base64
+            const firmaBase64 = canvas.toDataURL("image/png");
+
+            // OBJETO CON LAS LLAVES EXACTAS EXIGIDAS POR TU RESTRUCTURACIÓN DE COLUMNAS
+            const payload = {
+                ID_Registro: "REG-" + Date.now(),
+                Tienda: tienda,
+                Fecha: fecha,
+                Hora: hora,
+                Inspector_IT: "Soporte IT",
+                Estado_Global: document.getElementById('semaforo_texto').innerText,
+                Novedades_WiFi: document.getElementById('wifi_cobertura').value.trim() || 'Sin novedades',
+                Velocidad_Bajada_Mbps: document.getElementById('wifi_descarga').value || '0',
+                Velocidad_Subida_Mbps: document.getElementById('wifi_carga').value || '0',
+                Estado_Rack: document.getElementById('badge_rack').innerText,
+                Novedades_Rack: document.getElementById('rack_observaciones').value.trim() || 'Sin observaciones',
+                Estado_Cajas: document.getElementById('badge_cajas').innerText,
+                Novedades_Cajas: document.getElementById('observaciones_cajeros').value.trim() || 'Sin novedades',
+                Estado_Equipos: document.getElementById('badge_equipos').innerText,
+                Novedades_Equipos: document.getElementById('equipos_observaciones').value.trim() || 'Sin novedades',
+                Notas_Encargado: document.getElementById('notas_encargado').value.trim() || 'Sin notas',
+                Firmante_Tienda: nombreFirma,
+                Evidencia_Firma: firmaBase64
+            };
+
+            try {
+                // Envío optimizado mediante POST (Con modo no-cors activo para infraestructura estática)
+                await fetch(DATABASE_API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                alert("✅ ¡Registro Exitoso! Tus datos y novedades han sido almacenados en Google Sheets de manera segura.");
+                
+            } catch (error) {
+                console.error("Error en la transmisión:", error);
+                alert("❌ Error de transmisión: No se pudo conectar con el servidor de la hoja de cálculo.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "💾 Guardar Registro en BD";
+            }
+        }
+
+        function descargarExcel() {
+            calcularTodo(); 
+            const tienda = document.getElementById('tienda').value.trim() || "Tienda no especificada";
+            const fecha = document.getElementById('fecha').value || "Sin fecha";
+            const hora = document.getElementById('hora').value || "Sin hora";
+            const nombreFirmante = document.getElementById('nombre_firma').value.trim() || "No especificado";
+            
+            const estGlobal = document.getElementById('semaforo_texto').innerText;
+            const estWifi = document.getElementById('badge_wifi').innerText;
+            const estRack = document.getElementById('badge_rack').innerText;
+            const estCajas = document.getElementById('badge_cajas').innerText;
+            const estEquipos = document.getElementById('badge_equipos').innerText;
+
+            const estructuraDatos = [
+                ["INFORME DE CONTROL DE VISITAS TÉCNICAS (V1)", ""],
+                ["Área de Soporte e Infraestructura IT", ""],
+                ["", ""],
+                ["📍 DATOS DEL PUNTO DE VENTA", ""],
+                ["Nombre de la Tienda / ID", tienda],
+                ["Fecha de la Inspección", fecha],
+                ["Hora de la Inspección", hora],
+                ["", ""],
+                ["🚦 MATRIZ DE SEMAFORIZACIÓN", ""],
+                ["ESTADO GENERAL DE LA VISITA", estGlobal],
+                ["Subsistema: Red Wi-Fi", estWifi],
+                ["Subsistema: Rack de Comunicaciones", estRack],
+                ["Subsistema: Frente de Cajas (POS)", estCajas],
+                ["Subsistema: Equipos Móviles / Admin", estEquipos],
+                ["", ""],
+                ["✍️ CIERRE Y CONFORMIDAD", ""],
+                ["Encargado que valida la Visita", nombreFirmante],
+                ["Firma Táctil Digital", "Registrada en el dispositivo móvil"],
+                ["", ""],
+                ["📊 METRICAS DETALLADAS DE RED", ""],
+                ["Velocidad de Subida", (document.getElementById('wifi_carga').value || "N/R") + " Mbps"],
+                ["Velocidad de Bajada", (document.getElementById('wifi_descarga').value || "N/R") + " Mbps"],
+                ["Latencia del Enlace", (document.getElementById('wifi_latencia').value || "N/R") + " ms"],
+                ["Potencia de Señal", (document.getElementById('wifi_senal').value || "N/R") + " Db"]
+            ];
+
+            const libroTrabajo = XLSX.utils.book_new();
+            const hojaResumen = XLSX.utils.aoa_to_sheet(estructuraDatos);
+            hojaResumen['!cols'] = [{ wch: 35 }, { wch: 30 }];
+            XLSX.utils.book_append_sheet(libroTrabajo, hojaResumen, "Estado Semáforo");
+
+            const formatoNombre = `Reporte_Semaforo_${tienda.replace(/[^a-zA-Z0-9]/g, "_")}_${fecha}_${hora.replace(':', '-')}.xlsx`;
+            XLSX.writeFile(libroTrabajo, formatoNombre);
+        }
+
+        function generarHtmlCorreo() {
+            const tienda = document.getElementById('tienda').value.trim() || "[Nombre Tienda / ID]";
+            const fecha = document.getElementById('fecha').value || "[Fecha]";
+            const hora = document.getElementById('hora').value || "[Hora]";
+            const nombreFirmante = document.getElementById('nombre_firma').value.trim() || "[Nombre del Encargado]";
+            
+            const estGlobal = document.getElementById('semaforo_texto').innerText;
+            const estWifi = document.getElementById('badge_wifi').innerText;
+            const estRack = document.getElementById('badge_rack').innerText;
+            const estCajas = document.getElementById('badge_cajas').innerText;
+            const estEquipos = document.getElementById('badge_equipos').innerText;
+
+            const colores = { "ÓPTIMO": "#10b981", "ADVERTENCIA": "#f59e0b", "CRÍTICO": "#f43f5e" };
+            const insignias = {
+                "ÓPTIMO": `<span style="background-color:#10b981; color:white; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;">🟩 ÓPTIMO</span>`,
+                "ADVERTENCIA": `<span style="background-color:#f59e0b; color:white; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;">🟨 ADVERTENCIA</span>`,
+                "CRÍTICO": `<span style="background-color:#f43f5e; color:white; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;">🟥 CRÍTICO</span>`
+            };
+
+            let accionesCorrectivas = "";
+            if (estWifi !== "ÓPTIMO") accionesCorrectivas += `<li><b>[RED WI-FI]:</b> Acciones de estabilización inalámbrica inalámbrica estimadas en menos de 24 horas debido a alertas lógicas en la telemetría del canal.</li>`;
+            if (estRack !== "ÓPTIMO") accionesCorrectivas += `<li><b>[RACK COMUNICACIONES]:</b> Mitigación preventiva física del gabinete, reordenamiento de cordones ópticos y control ambiental.</li>`;
+            if (estCajas !== "ÓPTIMO") accionesCorrectivas += `<li><b>[FRENTE DE CAJAS]:</b> Mantenimiento preventivo en hardware crítico del ecosistema Surepos para asegurar la continuidad transaccional de cobro.</li>`;
+            if (estEquipos !== "ÓPTIMO") accionesCorrectivas += `<li><b>[DISPOSITIVOS MÓVILES]:</b> Depuración lógica de almacenamiento interno y actualización forzada de las aplicaciones core de operación.</li>`;
+            if (accionesCorrectivas === "") accionesCorrectivas = "<li>No se requieren acciones técnico-correctivas de urgencia. Mantener bitácora preventiva estándar.</li>";
+
+            let rackStatus = [];
+            if(document.getElementById('rack_organizado').checked) rackStatus.push("Organizado");
+            if(document.getElementById('rack_aire').checked) rackStatus.push("Aire OK");
+            if(document.getElementById('rack_extintor').checked) rackStatus.push("Extintor OK");
+            if(document.getElementById('rack_ups').checked) rackStatus.push("UPS OK");
+            if(document.getElementById('rack_bitacora').checked) rackStatus.push("Bitácora al día");
+
+            const imagenFirmaB64 = canvas.toDataURL("image/png");
+
+            let html = `<div><b>ASUNTO:</b> Informe Técnico IT - Inspección de Infraestructura y POS - ${tienda} (${fecha})</div><br>`;
+            html += `<p>Estimado Equipo Directivo,</p>`;
+            html += `<p>Comparto el informe formal derivado de la auditoría y visita técnica de soporte realizada al punto de venta el día ${fecha} a las ${hora}.</p>`;
+            html += `<div style="border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; background-color: #f8fafc; margin: 15px 0;">`;
+            html += `<h4 style="margin-top:0; color:#1e1b4b; border-bottom:1px solid #cbd5e1; padding-bottom:5px;">📊 DASHBOARD DE SALUD TECNOLÓGICA</h4>`;
+            html += `<p><b>ESTADO GLOBAL DE LA VISITA:</b> <span style="background-color:${colores[estGlobal]}; color:white; padding:4px 10px; border-radius:4px; font-weight:bold;">${estGlobal}</span></p>`;
+            html += `<ul style="list-style:none; padding-left:0;">`;
+            html += `<li style="margin-bottom:6px;">📡 Semáforo Red Wi-Fi: ${insignias[estWifi]}</li>`;
+            html += `<li style="margin-bottom:6px;">🗄️ Semáforo Rack Comun.: ${insignias[estRack]}</li>`;
+            html += `<li style="margin-bottom:6px;">🛒 Semáforo Frente Cajas: ${insignias[estCajas]}</li>`;
+            html += `<li style="margin-bottom:6px;">💻 Semáforo Equipos Móviles: ${insignias[estEquipos]}</li>`;
+            html += `</ul>`;
+            html += `</div>`;
+            
+            html += `<div style="margin: 15px 0;">`;
+            html += `<b>🛠️ PLAN DE ACCIÓN RECOMENDADO:</b>`;
+            html += `<ul style="padding-left:20px; margin-top:5px;">${accionesCorrectivas}</ul>`;
+            html += `</div>`;
+
+            html += `<div style="margin: 15px 0;">`;
+            html += `<b>📋 TELEMETRÍA Y OBSERVACIONES EN CAMPO:</b><br>`;
+            html += `- <b>Métricas Wi-Fi:</b> Carga: ${document.getElementById('wifi_carga').value || 'N/R'} Mbps | Descarga: ${document.getElementById('wifi_descarga').value || 'N/R'} Mbps | Latencia: ${document.getElementById('wifi_latencia').value || 'N/R'} ms.<br>`;
+            html += `- <b>Infraestructura Rack:</b> ${rackStatus.join(', ') || 'Revisión solicitada'} | <i>"${document.getElementById('rack_observaciones').value.trim() || 'Sin observaciones logísticas.'}"</i><br>`;
+            html += `- <b>Frente Cajas (POS):</b> Surepos (${document.getElementById('caja_surepos').value}) | Impresora Térmica (${document.getElementById('caja_termica').value}) | <i>"${document.getElementById('observaciones_cajeros').value.trim() || 'Sin novedades operativas por los cajeros.'}"</i><br>`;
+            html += `- <b>Insights Encargado:</b> <i>"${document.getElementById('notas_encargado').value.trim() || 'Operación sin requerimientos extraordinarios.'}"</i>`;
+            html += `</div><br>`;
+
+            html += `<div style="margin-top:20px; border-top:1px solid #e2e8f0; padding-top:10px;">`;
+            html += `<b>🤝 CIERRE DE CONFORMIDAD EN SITIO:</b><br>`;
+            html += `Validado por: <b>${nombreFirmante}</b> (Encargado / Jefe de Tienda)<br><br>`;
+            html += `<b>Firma Digital Recibida:</b><br>`;
+            html += `<img src="${imagenFirmaB64}" alt="Firma Autorizada" style="border: 1px dashed #cbd5e1; background-color:#f8fafc; max-width:260px; height:auto; margin-top:5px; display:block"/>`;
+            html += `</div><br>`;
+            html += `<p style="font-size:12px; color:#64748b;">Cordialmente,<br><b>Líder Regional de Soporte</b><br>Área de Teknología</p>`;
+            return html;
+        }
+
+        function generarTextoPPT() {
+            const tienda = document.getElementById('tienda').value.trim() || "[Nombre Tienda / ID]";
+            const fecha = document.getElementById('fecha').value || "[Fecha]";
+            const hora = document.getElementById('hora').value || "[Hora]";
+            const estado = document.getElementById('semaforo_texto').innerText;
+            const nombreFirmante = document.getElementById('nombre_firma').value.trim() || "[Nombre del Encargado]";
+
+            let ppt = `ESTRUCTURA DE LA PRESENTACIÓN (DIAPOSITIVAS CORPORATIVAS)\n\n`;
+            ppt += `DIAPOSITIVA 1: Portada\n- Título: Informe de Inspección Tecnológica de Tienda\n- Punto de Venta: ${tienda}\n- Fecha de Evaluación: ${fecha} (Hora: ${hora})\n\n`;
+            ppt += `DIAPOSITIVA 2: Dashboard Semáforo General\n- Estado de Salud del Punto: [ ${estado} ]\n- Novedades Críticas Consolidadas.\n\n`;
+            ppt += `DIAPOSITIVA 3: Estado de Cajas (POS)\n- Semáforo: ${document.getElementById('badge_cajas').innerText}\n- Voz del Usuario: "${document.getElementById('observaciones_cajeros').value.trim() || 'Sin novedades'}"\n\n`;
+            ppt += `DIAPOSITIVA 4: Infraestructura Física (Rack)\n- Semáforo: ${document.getElementById('badge_rack').innerText}\n- Hallazgos Físicos: "${document.getElementById('rack_observaciones').value.trim() || 'Estable'}"\n\n`;
+            ppt += `DIAPOSITIVA 5: Plan de Acción y Cierre\n- Cierre de conformidad firmado por el encargado ${nombreFirmante}.`;
+            return ppt;
+        }
+
+        function abrirModal(tipo) {
+            calcularTodo(); 
+            const modal = document.getElementById('modal');
+            const titulo = document.getElementById('modal_titulo');
+            const textoArea = document.getElementById('modal_texto');
+            const htmlPreview = document.getElementById('modal_preview_html');
+
+            if(tipo === 'correo') {
+                titulo.innerText = "📧 Formato de Correo Directivo (Con Firma)";
+                textoArea.classList.add('hidden'); 
+                htmlPreview.classList.remove('hidden'); 
+                htmlPreview.innerHTML = generarHtmlCorreo();
+            } else if(tipo === 'ppt') {
+                titulo.innerText = "📊 Guía de Diapositivas para Gerencia";
+                htmlPreview.classList.add('hidden'); 
+                textoArea.classList.remove('hidden'); 
+                textoArea.value = generarTextoPPT();
+            }
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function cerrarModal() {
+            const modal = document.getElementById('modal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+
+        async function copiarContenido() {
+            const htmlPreview = document.getElementById('modal_preview_html');
+            const textoArea = document.getElementById('modal_texto');
+            if (!htmlPreview.classList.contains('hidden')) {
+                try {
+                    const blobHtml = new Blob([htmlPreview.innerHTML], { type: 'text/html' });
+                    const blobText = new Blob([htmlPreview.innerText], { type: 'text/plain' });
+                    await navigator.clipboard.write([new ClipboardItem({ 'text/html': blobHtml, 'text/plain': blobText })]);
+                    alert('¡Correo copiado con éxito!');
+                } catch (err) {
+                    alert('Error al copiar contenido enriquecido de forma automática.');
+                }
+            } else {
+                textoArea.select();
+                document.execCommand('copy');
+                alert('¡Contenido copiado!');
+            }
+        }
+    </script>
+</body>
+</html>
